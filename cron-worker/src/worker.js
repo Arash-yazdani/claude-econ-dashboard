@@ -17,7 +17,7 @@ async function ping(env, state = "success", detail = "") {
     await fetch(url, {
       method: detail ? "POST" : "GET",
       body: detail || undefined,
-      headers: { "User-Agent": "macro-daily-briefing-cron" },
+      headers: { "User-Agent": "claude-econ-briefing-cron" },
     });
   } catch (err) {
     // A missed ping must never break the dispatch it is reporting on.
@@ -41,7 +41,7 @@ export default {
         "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
-        "User-Agent": "macro-daily-briefing-cron",
+        "User-Agent": "claude-econ-briefing-cron",
       },
       // workflow_dispatch inputs are strings; force:"false" -> the workflow omits --force.
       body: JSON.stringify({ ref: "main", inputs: { run_label: runLabel, force: "false" } }),

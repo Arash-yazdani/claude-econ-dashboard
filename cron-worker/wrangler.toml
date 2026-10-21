@@ -6,7 +6,7 @@
 # API. The repo's native `schedule:` crons stay as a fallback — run_daily.py's already_published
 # de-dupe (the Worker dispatches with force:false) guarantees exactly one publish per session.
 
-name = "macro-daily-briefing-cron"
+name = "claude-econ-briefing-cron"
 main = "src/worker.js"
 compatibility_date = "2024-11-01"
 
