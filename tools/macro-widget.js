@@ -27,7 +27,7 @@
 //     shows the last good briefing (clearly dated) rather than a failure.
 // =============================================================================
 
-const BASE = "https://macro.modeo.io";
+const BASE = "https://claude-econ.modeo.io";
 const CACHE_FILE = "macro-widget-cache.json";
 const REFRESH_MINUTES = 30;
 

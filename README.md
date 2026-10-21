@@ -29,9 +29,8 @@ fires until AWS and GitHub secrets are wired and those blocks are restored.
 4. GitHub Actions secrets: `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, plus the
    existing `FRED_API_KEY`, optional source keys, healthcheck URLs and `ALERT_SLACK_WEBHOOK`.
    Use new healthchecks for this repo; pinging the original's checks would mix the two signals.
-5. Cloudflare Pages project serving `public/` on its own subdomain. `public/index.html` and
-   `public/methodology.html` still carry `macro.modeo.io` canonical/OG URLs; change them to the new
-   subdomain. The OG PNGs still read "Economy Dashboard"; re-render them from the updated SVGs.
+5. Cloudflare Pages project serving `public/` on `claude-econ.modeo.io` (canonical/OG URLs and
+   OG images already point there).
 6. Then uncomment the schedules and `wrangler deploy` the Worker (CLAUDE.md: editing the workflow
    schedule alone is inert while the Worker dispatches).
 
