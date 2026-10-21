@@ -17,10 +17,10 @@ original repo is unaffected and stays at $0.
 
 | Role | Model | Effort | `max_tokens` | Why |
 |------|-------|--------|--------------|-----|
-| Briefing writer | `anthropic.claude-opus-5-5` | low | 4096 | Current Opus. The task is short constrained narration over a fixed schema, so low effort. |
-| Writer failover | `anthropic.claude-haiku-5-5` | low | 4096 | Different model tier, so one model-specific outage or refusal does not take both. |
+| Briefing writer | `anthropic.claude-haiku-5-5` | low | 4096 | Changed from Opus 5.5 by Arash on 2026-10-21 for cost. The task is one short paragraph inside a fixed schema, checked by the deterministic validator. |
+| Writer failover | `anthropic.claude-sonnet-5-5` | low | 4096 | Different model tier, so one model-specific outage or refusal does not take both. |
 | Craft judge, persona judge | `anthropic.claude-sonnet-5-5` | medium | 4096 | Not the writer's model, so the judge does not score its own output. Same family; see Consequences. |
-| Judge failovers | `anthropic.claude-haiku-5-5` | medium | 4096 | Replaces the Groq judge failover. Each judge's failover keeps that judge's schema. |
+| Judge failovers | `anthropic.claude-haiku-5-5` (`CLAUDE_JUDGE_FAILOVER_MODEL`) | medium | 4096 | Replaces the Groq judge failover. Each judge's failover keeps that judge's schema. |
 
 All ids are constants in `llm_client.py`, overridable with `CLAUDE_PRIMARY_MODEL`,
 `CLAUDE_FAILOVER_MODEL` and `CLAUDE_JUDGE_MODEL`.
@@ -115,3 +115,17 @@ The Mantle client signs requests with SigV4 for service name `bedrock-mantle`
 `https://bedrock-mantle.{region}.api.aws/anthropic`. That may need IAM actions under a
 `bedrock-mantle:` prefix rather than, or in addition to, `bedrock:InvokeModel`. Not verified: confirm
 the exact action names in the AWS Bedrock IAM documentation before writing the policy.
+
+
+## Amendment 2026-10-21: writer moved to Haiku 5.5
+
+Arash chose Claude Haiku 5.5 as the writer. Recomputed with the same token approximations (first-party list prices; Bedrock prices must be checked on aws.amazon.com/bedrock/pricing):
+
+| Line | Math | Monthly (61 runs) |
+|---|---|---|
+| Writer, Haiku 5.5 | 3,392 in x $0.10/M + 600 out x $0.50/M = $0.00064/run | $0.04 |
+| Daily eval judges, Sonnet 5.5 | unchanged, $0.0262/run | $1.60 |
+| Weekly gate, 12 cases, Haiku writer + Sonnet judge | ($0.00062 + $0.0110) x 12 = $0.14/gate x 4.35 | $0.61 |
+| Total | | about $2.25 |
+
+The judges are now about 97% of spend. Turning off the daily eval and the weekly gate cuts the total to about $0.04 a month, at the cost of the quality signal.

@@ -190,7 +190,7 @@ def test_request_kwargs_have_no_sampling_or_thinking_params():
     kw = sdk.calls[0]
     for banned in ("temperature", "top_p", "top_k", "thinking"):
         assert banned not in kw
-    assert kw["model"] == "anthropic.claude-opus-5-5"
+    assert kw["model"] == "anthropic.claude-haiku-5-5"
     assert kw["max_tokens"] == 4096
     assert kw["system"] == "sys"
     assert kw["messages"] == [{"role": "user", "content": "usr"}]
@@ -219,7 +219,7 @@ def test_default_writer_pair_and_env_overrides(monkeypatch):
     for env in (llm_client.PRIMARY_MODEL_ENV, llm_client.FAILOVER_MODEL_ENV):
         monkeypatch.delenv(env, raising=False)
     p, f = llm_client.make_writer_clients()
-    assert (p.model, f.model) == ("anthropic.claude-opus-5-5", "anthropic.claude-haiku-5-5")
+    assert (p.model, f.model) == ("anthropic.claude-haiku-5-5", "anthropic.claude-sonnet-5-5")
     monkeypatch.setenv(llm_client.PRIMARY_MODEL_ENV, "anthropic.custom-x")
     assert llm_client.make_writer_clients()[0].model == "anthropic.custom-x"
 

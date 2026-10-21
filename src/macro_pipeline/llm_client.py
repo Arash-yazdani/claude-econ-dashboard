@@ -29,12 +29,17 @@ from typing import Any, Optional, Protocol
 from . import observability, prompt
 
 # Bedrock model ids take the `anthropic.` prefix. Env overrides are read at construction time.
-PRIMARY_MODEL = "anthropic.claude-opus-5-5"
-FAILOVER_MODEL = "anthropic.claude-haiku-5-5"
+# Writer is Haiku 5.5 (Arash, 2026-10-21: lowest cost for a short constrained paragraph).
+# Failover is a different tier (Sonnet 5.5) so one model-specific outage or refusal cannot take both.
+PRIMARY_MODEL = "anthropic.claude-haiku-5-5"
+FAILOVER_MODEL = "anthropic.claude-sonnet-5-5"
 JUDGE_MODEL = "anthropic.claude-sonnet-5-5"
+# The judge failover must not be the judge model, so it stays on Haiku 5.5.
+JUDGE_FAILOVER_MODEL = "anthropic.claude-haiku-5-5"
 PRIMARY_MODEL_ENV = "CLAUDE_PRIMARY_MODEL"
 FAILOVER_MODEL_ENV = "CLAUDE_FAILOVER_MODEL"
 JUDGE_MODEL_ENV = "CLAUDE_JUDGE_MODEL"
+JUDGE_FAILOVER_MODEL_ENV = "CLAUDE_JUDGE_FAILOVER_MODEL"
 REGION_ENV = "AWS_REGION"
 
 WRITER_MAX_TOKENS = 4096
@@ -171,7 +176,7 @@ class BedrockClaudeClient:
 
 
 def make_writer_clients() -> tuple[BedrockClaudeClient, BedrockClaudeClient]:
-    """Production writer pair: (primary Opus 5.5, failover Haiku 5.5), env-overridable."""
+    """Production writer pair: (primary Haiku 5.5, failover Sonnet 5.5), env-overridable."""
     return (
         BedrockClaudeClient(os.environ.get(PRIMARY_MODEL_ENV) or PRIMARY_MODEL),
         BedrockClaudeClient(os.environ.get(FAILOVER_MODEL_ENV) or FAILOVER_MODEL),
@@ -180,7 +185,7 @@ def make_writer_clients() -> tuple[BedrockClaudeClient, BedrockClaudeClient]:
 
 def make_judge_client(schema: dict[str, Any], *, failover: bool = False) -> BedrockClaudeClient:
     """A judge on Claude (Sonnet 5.5 by default; Haiku 5.5 when `failover`), effort medium."""
-    model = (os.environ.get(FAILOVER_MODEL_ENV) or FAILOVER_MODEL) if failover else \
+    model = (os.environ.get(JUDGE_FAILOVER_MODEL_ENV) or JUDGE_FAILOVER_MODEL) if failover else \
         (os.environ.get(JUDGE_MODEL_ENV) or JUDGE_MODEL)
     return BedrockClaudeClient(model, effort=JUDGE_EFFORT, max_tokens=JUDGE_MAX_TOKENS, schema=schema)
 

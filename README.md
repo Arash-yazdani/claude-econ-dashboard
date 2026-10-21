@@ -9,8 +9,9 @@ Decision record: [docs/adr/ADR-007-claude-on-bedrock-writer.md](docs/adr/ADR-007
 
 | Role | Model (Bedrock id) | Env override | Effort |
 |------|--------------------|--------------|--------|
-| Briefing writer (primary) | `anthropic.claude-opus-5-5` | `CLAUDE_PRIMARY_MODEL` | low |
-| Writer failover, judge failover | `anthropic.claude-haiku-5-5` | `CLAUDE_FAILOVER_MODEL` | low (writer), medium (judge) |
+| Briefing writer (primary) | `anthropic.claude-haiku-5-5` | `CLAUDE_PRIMARY_MODEL` | low |
+| Writer failover | `anthropic.claude-sonnet-5-5` | `CLAUDE_FAILOVER_MODEL` | low |
+| Judge failover | `anthropic.claude-haiku-5-5` | `CLAUDE_JUDGE_FAILOVER_MODEL` | medium |
 | Craft judge, persona judge | `anthropic.claude-sonnet-5-5` | `CLAUDE_JUDGE_MODEL` | medium |
 
 Unchanged and deterministic: FRED ingest, the rules-only regime classifier (the model does not pick
