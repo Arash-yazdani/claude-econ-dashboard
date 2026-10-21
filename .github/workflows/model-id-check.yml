@@ -1,0 +1,27 @@
+# One-off: which Bedrock model id forms accept messages.create? Delete after use.
+name: model-id-check
+on: workflow_dispatch
+permissions: { contents: read }
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip -q install "anthropic[bedrock]>=1.17"
+      - env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          python - <<'PY'
+          import os, anthropic
+          c = anthropic.AnthropicBedrockMantle(aws_region=os.environ["AWS_REGION"])
+          for m in ["anthropic.claude-haiku-5-5", "us.anthropic.claude-haiku-5-5", "global.anthropic.claude-haiku-5-5",
+                    "anthropic.claude-sonnet-5-5", "us.anthropic.claude-sonnet-5-5", "global.anthropic.claude-sonnet-5-5"]:
+              try:
+                  r = c.messages.create(model=m, max_tokens=5, messages=[{"role": "user", "content": "hi"}])
+                  print("OK  ", m, r.stop_reason)
+              except Exception as e:
+                  print("FAIL", m, type(e).__name__, str(e)[:300])
+          PY
