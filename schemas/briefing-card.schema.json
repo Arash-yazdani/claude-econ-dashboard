@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BriefingCard",
+  "$comment": "Machine-readable copy of the public/briefing.json PWA card contract (B5/B6). public/app.js reads this file; daily.build_card emits it. The conditional models the two render states: state=='default' carries the LLM briefing object (fallback_text null); state=='fallback' carries the template fallback_text (briefing null). Keep in lockstep with src/macro_pipeline/daily.build_card and the public/demo/briefing-*.json fixtures.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "state",
+    "generated_at",
+    "run_label",
+    "data_through",
+    "regime",
+    "regime_label",
+    "drivers",
+    "briefing",
+    "fallback_text"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "default",
+        "fallback"
+      ]
+    },
+    "generated_at": {
+      "type": "string",
+      "$comment": "ISO-8601 in America/New_York with a DST-correct numeric offset.",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}[+-]\\d{2}:\\d{2}$"
+    },
+    "run_label": {
+      "type": "string",
+      "enum": [
+        "AM",
+        "PM"
+      ]
+    },
+    "data_through": {
+      "type": "string"
+    },
+    "regime": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "regime_label": {
+      "type": "string"
+    },
+    "drivers": {
+      "type": "array",
+      "$comment": "\u22642 indicator ids the deterministic classifier used to pick the regime (display-only).",
+      "items": {
+        "type": "string"
+      }
+    },
+    "briefing": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "headline",
+        "quotable_numbers",
+        "whats_new",
+        "regime_change"
+      ],
+      "properties": {
+        "headline": {
+          "type": "string"
+        },
+        "quotable_numbers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "indicator_id",
+              "sentence"
+            ],
+            "properties": {
+              "indicator_id": {
+                "type": "string"
+              },
+              "sentence": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "whats_new": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "regime_change": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "fallback_text": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rule": {
+      "type": "string",
+      "description": "W1: classifier branch that fired ('soft_landing', 'fallthrough', ...). Optional; cards predating 2026-08-06 omit it."
+    },
+    "basis": {
+      "type": "array",
+      "description": "W1: clauses the branch tested, [indicator_id, observed, operator, threshold]. Empty for the catch-all fallthrough, which tested nothing.",
+      "items": {
+        "type": "array",
+        "minItems": 4,
+        "maxItems": 4
+      }
+    }
+  },
+  "allOf": [
+    {
+      "$comment": "default => the LLM briefing object is present and fallback_text is null.",
+      "if": {
+        "properties": {
+          "state": {
+            "const": "default"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "briefing": {
+            "type": "object"
+          },
+          "fallback_text": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "$comment": "fallback => briefing is null and fallback_text is the template string.",
+      "if": {
+        "properties": {
+          "state": {
+            "const": "fallback"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "briefing": {
+            "type": "null"
+          },
+          "fallback_text": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  ]
+}

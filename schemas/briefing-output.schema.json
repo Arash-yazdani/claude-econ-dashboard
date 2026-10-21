@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BriefingOutput",
+  "$comment": "Machine-readable copy of docs/schemas/briefing-io-v1.0.md (v1.0, locked D8/SCRUM-20). The Gemini responseSchema (B3) AND the 17-check validator target (B4). Keep in lockstep with that doc.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["headline", "quotable_numbers", "whats_new", "regime_change"],
+  "properties": {
+    "headline": { "type": ["string", "null"], "maxLength": 140 },
+    "quotable_numbers": {
+      "type": "array",
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["indicator_id", "sentence"],
+        "properties": {
+          "indicator_id": { "type": "string" },
+          "sentence": { "type": "string", "maxLength": 200 }
+        }
+      }
+    },
+    "whats_new": { "type": ["string", "null"] },
+    "regime_change": { "type": ["string", "null"] },
+    "error": { "type": "string", "enum": ["data_unavailable"] }
+  }
+}

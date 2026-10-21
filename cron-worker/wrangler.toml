@@ -1,0 +1,31 @@
+# Cloudflare Worker — reliable trigger for the daily-briefing workflow.
+#
+# GitHub Actions `schedule:` is best-effort and silently drops runs (it dropped the entire
+# AM session on 2026-06-22). Cloudflare Worker cron triggers are reliable, so this Worker is
+# the PRIMARY scheduler: on each fire it dispatches the daily-briefing workflow via the GitHub
+# API. The repo's native `schedule:` crons stay as a fallback — run_daily.py's already_published
+# de-dupe (the Worker dispatches with force:false) guarantees exactly one publish per session.
+
+name = "macro-daily-briefing-cron"
+main = "src/worker.js"
+compatibility_date = "2024-11-01"
+
+# Times are UTC. Fire the EDT+EST pair per session (10:45 ET AM, 17:30 ET PM, year-round), like the
+# GitHub workflow. run_daily's ET window + de-dupe mean only the post-ingest one of each AM pair
+# publishes: 14:45 UTC = 10:45 EDT (summer) but 09:45 EST (winter -> below the 10:30 floor,
+# self-skips); 15:45 UTC = 10:45 EST (winter). PM: 21:30 = 17:30 EDT, 22:30 = 17:30 EST.
+#
+# AM moved 09:45 -> 10:45 ET on 2026-08-12. This Worker is the PRIMARY scheduler, so the GitHub
+# workflow's own `schedule:` change is inert until this file is redeployed (`wrangler deploy`):
+# the Worker would keep dispatching at 09:45 ET, publish pre-ingest, and the corrected 10:45 run
+# would de-dupe against it. Reason for the move: FRED ingests the 08:30 ET BLS releases ~10:10 ET.
+# DISABLED in claude-econ-dashboard until secrets are wired (README). Restore to enable:
+# [triggers]
+# crons = ["45 14 * * *", "45 15 * * *", "30 21 * * *", "30 22 * * *"]
+
+[vars]
+GITHUB_OWNER = "Arash-yazdani"
+GITHUB_REPO = "claude-econ-dashboard"
+WORKFLOW_FILE = "daily-briefing.yml"
+# GITHUB_TOKEN is a secret (a fine-grained PAT with Actions: read+write) — set it with:
+#   wrangler secret put GITHUB_TOKEN

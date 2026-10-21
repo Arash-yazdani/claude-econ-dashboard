@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Secrets — NEVER commit keys (FRED/Gemini/Groq). See .env.example.
+.env
+*.local
+
+# Pipeline internal cache: persist ONLY the run-to-run snapshot so release detection +
+# regime_yesterday survive between ephemeral cron runs (else whats_new / regime-change never
+# fire). Ignore everything else under the dir.
+/data/cache/*
+!/data/cache/pipeline-cache.json
+/public/briefing-request.json
+# NOTE: eval_log.csv is intentionally TRACKED (PRD §397 "in repo") — B8 resolves the deferred
+# committed-history policy: the judge eval log lives in git for the monitoring dashboard.
+# NOTE: logs/ is intentionally NOT ignored — logs/.gitkeep tracks the dir now, and logs/runs.jsonl
+# (created on the first run; PRD §339 indefinite-retention audit) gets tracked once it exists.
+# NOTE: public/indicators.json + public/briefing.json are intentionally TRACKED —
+# ADR-001 has the cron COMMIT them so Cloudflare Pages serves the fresh data.
+
+# Cloudflare Worker (cron-worker/) — local build cache + dev secrets, never commit
+.wrangler/
+.dev.vars
+cron-worker/node_modules/
+
+# Commercial videos / marketing media — user decision 2026-07-22: stays local, never on GitHub
+marketing/
+
+# Architecture / process diagrams (Excalidraw) — user decision 2026-07-24: local-only, never on GitHub
+*.excalidraw
+
+# OS
+.DS_Store
+
+# Local spreadsheet backups (timestamped copies made before a bulk tracker edit)
+*.BACKUP-*.xlsx

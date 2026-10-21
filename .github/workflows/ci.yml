@@ -1,0 +1,27 @@
+# Test suite on every push that touches code. Until 2026-09-03 nothing ran the tests in CI at all:
+# a red suite on main was only ever discovered locally. Path-filtered so the cron's ~10 data
+# commits a day (public/*.json, logs/, docs/monitoring.md) never trigger it.
+name: ci
+
+on:
+  push:
+    branches: [main]
+    paths: ["src/**", "tests/**", "scripts/**", "public/app.js", "tools/**", "pyproject.toml", "constraints.txt"]
+  pull_request:
+    paths: ["src/**", "tests/**", "scripts/**", "public/app.js", "tools/**", "pyproject.toml", "constraints.txt"]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]" -c constraints.txt
+      - run: python -m pytest -q
+      # DEC2/SIGNED formatting sets are hand-duplicated between the PWA and the widget.
+      - run: node --test "tests/js/*.test.js"

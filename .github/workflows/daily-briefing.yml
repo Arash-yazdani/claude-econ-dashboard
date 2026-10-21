@@ -1,0 +1,279 @@
+# Daily macro briefing cron (B6 — ADR-001 v1.2, SCRUM-30).
+#
+# Runs the Python pipeline TWICE DAILY (10:45 ET "AM" — after FRED's ~10:10 ET ingest of the
+# 08:30 BLS releases, NOT the market open — + 17:30 ET "PM"), commits the fresh
+# public/indicators.json + public/briefing.json back to the repo, and Cloudflare Pages
+# auto-deploys the static PWA. The PWA holds no secrets — only this cron needs the API keys
+# (GitHub Actions Secrets).
+#
+# PRIMARY TRIGGER: the Cloudflare Worker in cron-worker/ dispatches this workflow on its own
+# reliable crons; the `schedule:` block below is the free best-effort fallback (GitHub dropped
+# an entire AM session on 2026-06-22). A schedule change must ALSO edit + `wrangler deploy`
+# cron-worker/wrangler.toml, or the Worker keeps dispatching at the old times.
+#
+# DST: GitHub's `schedule` is UTC-only. We register the EDT+EST pair (plus a buffer) per session;
+# run_daily.py's wide session window (resolve_run_label: AM 10:30-13:59, PM 14:00-22:59 ET) +
+# de-dupe publish exactly one run per session; a pre-ingest firing self-skips.
+
+name: daily-briefing
+
+on:
+  # GitHub cron is best-effort — it fires 1–2h late and sometimes drops a firing. So fire SEVERAL
+  # times per session and let run_daily de-dupe (it publishes once per ET day per AM/PM session).
+  # Each cron stays inside its session window (resolve_run_label: ET 10:30–14 = AM, 14–23 = PM) even
+  # after a ~2h delay and across EDT/EST, so a delayed firing still publishes instead of skipping.
+  # DISABLED in claude-econ-dashboard until AWS + GitHub secrets are wired (see README,
+  # 'Before anything runs'). Uncomment the schedule block to enable.
+  # schedule:
+  #   # AM targets ~10:45 ET in BOTH tz halves. NOT the market open: FRED ingests the 08:30 ET BLS
+  #   # releases (CPI, jobs) around 10:10 ET, so the old 09:45 ET slot read last month's print every
+  #   # release morning (2026-08-12: served June CPI while July was already public). resolve_run_label's
+  #   # 10:30 floor makes the wrong-half firing self-skip, so each session is claimed post-ingest.
+  #   - cron: "45 14 * * *"   # AM ~10:45 EDT — primary AM (EDT); 09:45 EST self-skips (pre-ingest)
+  #   - cron: "45 15 * * *"   # AM ~10:45 EST — primary AM (EST); 11:45 EDT de-dupes
+  #   - cron: "15 16 * * *"   # AM buffer — 12:15 EDT / 11:15 EST, both post-ingest; catches a dropped firing
+  #   - cron: "30 21 * * *"   # PM ~17:30 ET (EDT) / 16:30 (EST)  — primary PM
+  #   - cron: "0 22 * * *"    # PM buffer
+  #   - cron: "30 22 * * *"   # PM buffer (EST primary)
+  # Dispatched by (a) a human for manual recovery, and (b) the Cloudflare cron Worker
+  # (cron-worker/) which is the reliable primary scheduler — GitHub's `schedule:` below is a
+  # best-effort fallback. The Worker passes force=false so run_daily.py keeps its de-dupe; a
+  # human leaves force=true (default) to bypass it and force a re-publish.
+  workflow_dispatch:
+    inputs:
+      run_label:
+        description: "Run label (AM or PM)."
+        required: false
+        type: choice
+        default: AM
+        options:
+          - AM
+          - PM
+      force:
+        description: "Force publish, bypassing the already-published de-dupe (manual=true; the cron Worker passes false)."
+        required: false
+        type: boolean
+        default: true
+
+# Least privilege: the job only needs to commit the regenerated data back to the repo.
+permissions:
+  contents: write
+
+# Never let two cron firings race to commit the same files.
+concurrency:
+  group: daily-briefing
+  cancel-in-progress: false
+
+jobs:
+  briefing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Install package
+        run: pip install -e . -c constraints.txt
+
+      # MODEL LIVENESS, daily. The weekly probe leaves up to six days between a provider
+      # decommissioning a model id and anyone hearing about it. Alert-only (exit 0): a dead model
+      # must never block the publish that the Haiku failover (or the fallback card) would still deliver.
+      - name: Probe LLM model ids (alert only)
+        continue-on-error: true
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ALERT_SLACK_WEBHOOK: ${{ secrets.ALERT_SLACK_WEBHOOK }}
+        run: python scripts/probe_models.py
+
+      # PUBLISHED-FRESHNESS WATCHDOG. Every other signal watches whether a RUN happened; none
+      # watched whether a PUBLISH did. On 2026-08-25 the RED gate began failing the job before the
+      # commit step, so runs kept succeeding-then-committing-nothing and the live card sat two days
+      # stale while logs/runs.jsonl filled with healthy rows. This reads the COMMITTED briefing at
+      # checkout (i.e. what the reader is actually being served) and alerts when it is older than a
+      # full session cycle.
+      #
+      # It deliberately does NOT fail the job: staleness is cured by the publish that follows, and
+      # failing here would block that publish — the exact inversion that caused the outage.
+      - name: Warn if the PUBLISHED briefing is stale
+        continue-on-error: true
+        env:
+          ALERT_SLACK_WEBHOOK: ${{ secrets.ALERT_SLACK_WEBHOOK }}
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          from datetime import datetime, timezone
+          from macro_pipeline import observability
+          MAX_AGE_H = 24  # sessions are ~10:45 + ~17:30 ET, so the widest healthy gap is ~17h
+          p = pathlib.Path("public/briefing.json")
+          if not p.exists():
+              print("no published briefing yet — first run"); raise SystemExit(0)
+          ts = json.loads(p.read_text()).get("generated_at", "")
+          dt = datetime.fromisoformat(ts)
+          if dt.tzinfo is None:
+              dt = dt.replace(tzinfo=timezone.utc)
+          age_h = (datetime.now(timezone.utc) - dt).total_seconds() / 3600
+          if age_h > MAX_AGE_H:
+              observability.send_alert(
+                  f"PUBLISHED briefing is {age_h:.0f}h old (generated {ts}). Runs may be completing "
+                  f"without committing — check whether the monitoring gate or the commit step is "
+                  f"failing. The reader is being served a stale card right now.")
+              print(f"::warning::published briefing is {age_h:.0f}h old ({ts})")
+          else:
+              print(f"published briefing is {age_h:.1f}h old — fresh")
+          PY
+
+      # `.[langsmith]` pulls the OPTIONAL tracing SDK, deliberately its own step with
+      # continue-on-error: a pip/network hiccup installing this extra must never stop the
+      # briefing from publishing. tracing.enabled() already treats a missing SDK as "off".
+      - name: Install optional tracing extra
+        continue-on-error: true
+        run: pip install -e ".[langsmith]" -c constraints.txt
+
+      # Scheduled firings resolve their own AM/PM from ET now and self-skip off-window.
+      # workflow_dispatch passes the chosen label and --force to bypass the off-window skip.
+      - name: Run daily briefing
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          GOLD_API_KEY: ${{ secrets.GOLD_API_KEY }}
+          BLS_API_KEY: ${{ secrets.BLS_API_KEY }}
+          EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
+          BEA_API_KEY: ${{ secrets.BEA_API_KEY }}
+          CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+          HEALTHCHECKS_URL: ${{ secrets.HEALTHCHECKS_URL }}
+          # Named checks — a fallback publish and a degraded source both exit 0 and ping the
+          # dead-man switch green, so they need their own checks to alert at all.
+          HEALTHCHECKS_URL_QUALITY: ${{ secrets.HEALTHCHECKS_URL_QUALITY }}
+          HEALTHCHECKS_URL_SOURCES: ${{ secrets.HEALTHCHECKS_URL_SOURCES }}
+          ALERT_SLACK_WEBHOOK: ${{ secrets.ALERT_SLACK_WEBHOOK }}
+          LANGSMITH_TRACING: "true"
+          LANGSMITH_ENDPOINT: https://api.smith.langchain.com
+          LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
+          LANGSMITH_PROJECT: macro-daily-briefing
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # force=true (manual default) bypasses the de-dupe; the cron Worker passes false so a
+            # dispatch that races the schedule fallback self-skips instead of double-publishing.
+            FORCE=""
+            if [ "${{ inputs.force }}" = "true" ]; then FORCE="--force"; fi
+            python scripts/run_daily.py --run-label "${{ inputs.run_label }}" $FORCE
+          else
+            python scripts/run_daily.py
+          fi
+
+      # DAILY 3-DIMENSION EVAL: score the briefing we just published (D1 brief quality via the
+      # LLM judge, D2 regime, D3 indicator accuracy), push the scores to LangSmith as feedback,
+      # and /fail the judge-daily healthcheck when quality drops. continue-on-error because a
+      # quality REPORT must never block a publish that already passed the validator — the check
+      # failing is itself the alert.
+      - name: Daily eval
+        continue-on-error: true
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          GOLD_API_KEY: ${{ secrets.GOLD_API_KEY }}
+          BLS_API_KEY: ${{ secrets.BLS_API_KEY }}
+          EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
+          BEA_API_KEY: ${{ secrets.BEA_API_KEY }}
+          CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+          HEALTHCHECKS_URL_JUDGE: ${{ secrets.HEALTHCHECKS_URL_JUDGE }}
+          ALERT_SLACK_WEBHOOK: ${{ secrets.ALERT_SLACK_WEBHOOK }}
+          LANGSMITH_TRACING: "true"
+          LANGSMITH_ENDPOINT: https://api.smith.langchain.com
+          LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
+          LANGSMITH_PROJECT: macro-daily-briefing
+        # --reconcile only on the PM run: it re-fetches every indicator, and FRED's per-run call
+        # budget is better spent once a day than twice (PRD q47 keeps FRED ≤25 calls/day target).
+        run: |
+          if [ "${{ inputs.run_label }}" = "PM" ] || [ "$(TZ=America/New_York date +%H)" -ge 14 ]; then
+            python scripts/run_daily_eval.py --reconcile
+          else
+            python scripts/run_daily_eval.py
+          fi
+
+      # RED GATE (PRD §397): regenerate the monitoring dashboard. build_monitoring.py exits 3
+      # on RED. continue-on-error lets the next step inspect the outcome and pause publish.
+      - name: Build monitoring dashboard
+        id: monitor
+        continue-on-error: true
+        run: python scripts/build_monitoring.py
+
+      # If monitoring is RED (exit 3), refuse to publish: best-effort alert, then fail the job
+      # WITHOUT committing — the PWA keeps serving the last-good briefing.
+      - name: Pause publish on RED
+        if: ${{ steps.monitor.outcome == 'failure' }}
+        env:
+          HEALTHCHECKS_URL: ${{ secrets.HEALTHCHECKS_URL }}
+          ALERT_SLACK_WEBHOOK: ${{ secrets.ALERT_SLACK_WEBHOOK }}
+        run: |
+          echo "::error::Monitoring RED — pausing publish"
+          python -c "from macro_pipeline import observability as o; o.send_alert('Daily cron: monitoring RED — publish paused')" || true
+          exit 1
+
+      # Commit + push only when GREEN (we got past the RED gate) and files actually changed.
+      # The `if ! git diff --staged --quiet` guard makes a no-op run succeed without committing
+      # (e.g. an off-window firing that self-skipped and wrote nothing).
+      # NB: deliberately NO `[skip ci]` in the message. This workflow has no `push:` trigger, so
+      # the bot's own data commit can't re-trigger it (no loop) — and Cloudflare Pages SKIPS the
+      # deploy for any commit whose message contains `[skip ci]`/`[CI Skip]`, which would stop the
+      # fresh briefing from ever publishing. The commit must be deployable so Cloudflare ships it.
+      - name: Commit fresh briefing
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Stage only the data files that EXIST: an off-window self-skip writes nothing, and
+          # logs/runs.jsonl is created on the first real run — a blanket `git add <missing>` would
+          # exit 128 and red-X the job. Keep the explicit allowlist (never `git add -A`).
+          # data/cache/pipeline-cache.json is committed so the prior run's snapshot survives the
+          # ephemeral runner — that's what release detection + regime_yesterday compare against
+          # (without it, whats_new + regime-change can never fire).
+          for f in public/indicators.json public/briefing.json logs/runs.jsonl logs/daily_eval.csv logs/reconciliation.jsonl docs/monitoring.md data/cache/pipeline-cache.json; do
+            if [ -e "$f" ]; then git add "$f"; fi
+          done
+          # Commit AND push only when something actually changed — a no-op run must succeed cleanly.
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(cron): daily briefing $(date -u +%Y-%m-%d) ${{ inputs.run_label || 'auto' }}"
+            # Two firings can land seconds apart (Cloudflare double-fired every cron 2026-10-12..16, and the
+            # GitHub schedule fallback races the Worker by design). The loser self-skips but still regenerates
+            # docs/monitoring.md, so rebase onto the winner instead of red-X-ing on a rejected push.
+            # -X theirs keeps this run's regenerated files on the rare same-line conflict.
+            git pull --rebase --autostash -X theirs origin main
+            git push
+          fi
+
+      # FAILURE PATH — preserve the audit row (PRD §339: EVERY run is logged, including failures).
+      # Without this the crash-path error_record dies on the ephemeral runner, because the commit
+      # step above is skipped whenever an earlier step fails. That is why logs/runs.jsonl could
+      # only ever contain SUCCESSES, leaving every dashboard and alert built on it blind to
+      # failure by construction. Deliberately commits ONLY the audit log — a failed or RED run
+      # must still never publish public/briefing.json.
+      - name: Preserve audit log on failure
+        if: ${{ failure() }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # BOTH allowlists, deliberately. Evidence written on a run that later fails is the
+          # most valuable evidence there is, and staging it only on the success path is exactly
+          # the blindness the 'Preserve audit log on failure' step exists to prevent.
+          for f in logs/runs.jsonl logs/reconciliation.jsonl; do
+            if [ -e "$f" ]; then git add "$f"; fi
+          done
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(cron): audit row for FAILED run $(date -u +%Y-%m-%dT%H:%M:%SZ) ${{ inputs.run_label || 'auto' }}"
+            # The cron pushes to main frequently; rebase before pushing so a concurrent data
+            # commit can't turn a failure-path audit write into a second, silent failure.
+            git pull --rebase --autostash origin main || true
+            git push || true
+          fi

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <!-- Authored as a 1200x1200 SQUARE (qlmanage renders square SVGs faithfully; it clips/pads
+       non-square ones). All content lives in the TOP 630px band, which is cropped out to make the
+       1200x630 landscape OG banner (Twitter/LinkedIn/Slack). -->
+  <defs>
+    <radialGradient id="glow" cx="82%" cy="0%" r="80%">
+      <stop offset="0%" stop-color="#6fc2a6" stop-opacity="0.20"/>
+      <stop offset="60%" stop-color="#6fc2a6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bar" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#6fc2a6"/>
+      <stop offset="80%" stop-color="#6fc2a6" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="spark" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#6fc2a6" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#6fc2a6" stop-opacity="0.95"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="1200" fill="#0b0c0e"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <rect width="1200" height="5" fill="url(#bar)"/>
+
+  <!-- eyebrow -->
+  <circle cx="84" cy="92" r="7" fill="#6fc2a6"/>
+  <text x="106" y="100" font-family="Menlo, 'IBM Plex Mono', monospace" font-size="22" letter-spacing="6" fill="#7c7f86">CLAUDE ECON DASHBOARD</text>
+
+  <!-- headline (editorial serif) -->
+  <text x="78" y="240" font-family="Georgia, 'Newsreader', 'Times New Roman', serif" font-size="78" font-weight="500" fill="#e9e6df">The U.S. economy,</text>
+  <text x="78" y="330" font-family="Georgia, 'Newsreader', 'Times New Roman', serif" font-size="78" font-weight="500" fill="#e9e6df">in one quotable read.</text>
+
+  <!-- subhead (precise mono) -->
+  <text x="80" y="398" font-family="Menlo, 'IBM Plex Mono', monospace" font-size="26" fill="#b3b2ab">Inflation &#183; jobs &#183; growth &#183; rates, refreshed twice a day.</text>
+
+  <!-- sparkline motif -->
+  <polyline points="80,508 232,490 344,524 504,452 648,492 808,408 948,440 1064,344 1122,382"
+            fill="none" stroke="url(#spark)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="1122" cy="382" r="11" fill="#6fc2a6"/>
+
+  <!-- footer: regime pill + url -->
+  <rect x="80" y="556" width="192" height="46" rx="23" fill="#6fc2a6" fill-opacity="0.15"/>
+  <circle cx="110" cy="579" r="7" fill="#6fc2a6"/>
+  <text x="127" y="587" font-family="Georgia, serif" font-size="25" fill="#9fd9c4">Soft landing</text>
+  <text x="1120" y="588" text-anchor="end" font-family="Menlo, monospace" font-size="22" fill="#6b6e75">macro.modeo.io</text>
+</svg>

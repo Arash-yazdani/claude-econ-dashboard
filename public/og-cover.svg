@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200">
+  <defs>
+    <radialGradient id="glow" cx="82%" cy="2%" r="72%">
+      <stop offset="0%" stop-color="#6fc2a6" stop-opacity="0.20"/>
+      <stop offset="58%" stop-color="#6fc2a6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bar" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#6fc2a6"/>
+      <stop offset="80%" stop-color="#6fc2a6" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="spark" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#6fc2a6" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#6fc2a6" stop-opacity="0.95"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="1200" fill="#0b0c0e"/>
+  <rect width="1200" height="1200" fill="url(#glow)"/>
+  <rect width="1200" height="6" fill="url(#bar)"/>
+
+  <!-- eyebrow -->
+  <circle cx="88" cy="202" r="8" fill="#6fc2a6"/>
+  <text x="112" y="211" font-family="Menlo, 'IBM Plex Mono', monospace" font-size="26" letter-spacing="8" fill="#7c7f86">CLAUDE ECON DASHBOARD</text>
+
+  <!-- headline (editorial serif) -->
+  <text x="80" y="436" font-family="Georgia, 'Newsreader', 'Times New Roman', serif" font-size="80" font-weight="500" fill="#e9e6df">The U.S. economy,</text>
+  <text x="80" y="538" font-family="Georgia, 'Newsreader', 'Times New Roman', serif" font-size="80" font-weight="500" fill="#e9e6df">in one quotable read.</text>
+
+  <!-- subhead (precise mono) -->
+  <text x="82" y="624" font-family="Menlo, 'IBM Plex Mono', monospace" font-size="29" fill="#b3b2ab">Inflation &#183; jobs &#183; growth &#183; rates,</text>
+  <text x="82" y="668" font-family="Menlo, 'IBM Plex Mono', monospace" font-size="29" fill="#b3b2ab">refreshed twice a day.</text>
+
+  <!-- prominent sparkline motif -->
+  <polyline points="80,890 232,868 344,908 504,824 648,870 808,772 948,810 1064,700 1122,742"
+            fill="none" stroke="url(#spark)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="1122" cy="742" r="12" fill="#6fc2a6"/>
+
+  <!-- footer: regime pill + url -->
+  <rect x="80" y="1022" width="200" height="50" rx="25" fill="#6fc2a6" fill-opacity="0.15"/>
+  <circle cx="112" cy="1047" r="7" fill="#6fc2a6"/>
+  <text x="130" y="1056" font-family="Georgia, serif" font-size="27" fill="#9fd9c4">Soft landing</text>
+  <text x="80" y="1132" font-family="Menlo, monospace" font-size="25" fill="#6b6e75">macro.modeo.io</text>
+</svg>

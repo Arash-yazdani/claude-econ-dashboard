@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "state": "default",
+  "generated_at": "2026-10-19T10:46:03-04:00",
+  "run_label": "AM",
+  "data_through": "2026-10-19",
+  "regime": "soft_landing",
+  "regime_label": "Soft landing",
+  "drivers": [
+    "unemployment",
+    "core_cpi_yoy"
+  ],
+  "rule": "soft_landing",
+  "basis": [
+    [
+      "real_gdp_yoy",
+      2.1916,
+      ">=",
+      1.0
+    ],
+    [
+      "core_cpi_yoy",
+      2.5644,
+      "<",
+      3.0
+    ],
+    [
+      "unemployment",
+      4.2,
+      "<=",
+      5.0
+    ]
+  ],
+  "briefing": {
+    "headline": "The Soft landing continues, supported by a stable labor market as inflation cools.",
+    "quotable_numbers": [
+      {
+        "indicator_id": "core_cpi_yoy",
+        "sentence": "Core CPI at 2.6 percent for Sep 2026 is nearing the Fed's target, easing price pressures."
+      },
+      {
+        "indicator_id": "unemployment",
+        "sentence": "Unemployment at 4.2 percent for Sep 2026 shows a resilient job market, sustaining household income."
+      }
+    ],
+    "whats_new": "Today: Fed Funds unchanged, from 3.88 percent to 3.88 percent.",
+    "regime_change": null
+  },
+  "fallback_text": null
+}

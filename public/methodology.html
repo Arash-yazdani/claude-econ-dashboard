@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en" data-regime="indeterminate">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0c0e" />
+  <meta name="description" content="How the Daily Macro Briefing is made: 26 public indicators, a rules-only regime call, one constrained language model, and a validator that re-checks every number against the source." />
+  <title>Methodology — Claude Econ Dashboard</title>
+  <link rel="canonical" href="https://macro.modeo.io/methodology" />
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Methodology",
+    "url": "https://macro.modeo.io/methodology",
+    "description": "How the Daily Macro Briefing is made: 26 public indicators, a rules-only regime call, one constrained language model, and a validator that re-checks every number against the source.",
+    "dateModified": "2026-08-20",
+    "isPartOf": { "@type": "WebSite", "name": "Claude Econ Dashboard", "url": "https://macro.modeo.io/" },
+    "publisher": { "@type": "Organization", "name": "Modeo", "url": "https://modeo.io" }
+  }
+  </script>
+  <style>
+    /* Prose layout for this page only; tokens come from styles.css. */
+    .method { max-width: var(--maxw); width: 100%; }
+    .method h1 {
+      font-family: var(--serif);
+      font-size: 1.9rem;
+      font-weight: 600;
+      line-height: 1.15;
+      margin: 0.4rem 0 0.4rem;
+      color: var(--text);
+    }
+    .method .sub { color: var(--text-dim); font-size: 0.82rem; line-height: 1.55; }
+    .method h2 {
+      font-family: var(--serif);
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 1.9rem 0 0.5rem;
+      color: var(--text);
+    }
+    .method p { color: var(--text-dim); font-size: 0.83rem; line-height: 1.65; margin: 0.55rem 0; }
+    .method li { color: var(--text-dim); font-size: 0.83rem; line-height: 1.6; margin: 0.3rem 0 0.3rem 1.1rem; }
+    .method a { color: var(--accent); text-decoration: none; }
+    .method a:hover { text-decoration: underline; }
+    .method .backlink { display: inline-block; margin-bottom: 1.2rem; font-size: 0.78rem; }
+    .method .colophon {
+      margin-top: 2.2rem; padding-top: 1rem; border-top: 1px solid var(--hairline);
+      color: var(--text-mute); font-size: 0.75rem; line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient" aria-hidden="true"></div>
+  <main class="app method">
+    <a class="backlink" href="./">← Back to the briefing</a>
+    <p class="eyebrow"><span class="dot"></span>Claude Econ Dashboard</p>
+    <h1>How this briefing is made</h1>
+    <p class="sub">The short version: public data in, a rules-only economic call, one tightly
+    constrained language model for the writing, and a validator that re-checks every number
+    before anything is published. Twice a day, every day.</p>
+
+    <h2>Where the numbers come from</h2>
+    <p>The briefing tracks 26 indicators: 7 core series that drive the headline read, 11
+    supporting series, and 8 market rows. The backbone is FRED, the Federal Reserve Bank of
+    St. Louis data service, grafted with same-day feeds where FRED lags: Treasury.gov for the
+    2-year and 10-year yields, the BLS for CPI and jobs as the agency publishes them, the New
+    York Fed for the effective fed funds rate, CBOE for VIX, FiscalData for the federal debt,
+    and a spot feed for gold. Every value passes a plausibility gate before it is used, and a
+    value that fails it is blanked rather than narrated.</p>
+
+    <h2>Who makes the economic call</h2>
+    <p>Not the AI. A hand-written, rules-only classifier assigns one of five macro regimes
+    from fixed thresholds on the core series, with hysteresis so the label does not flap
+    between updates. When the rules do not describe the data, the dashboard says so and shows
+    a neutral no-call state instead of forcing a verdict. The language model never re-derives
+    or overrides that call.</p>
+
+    <h2>What the AI actually does</h2>
+    <p>One constrained language model call (Claude on Amazon Bedrock) writes the briefing
+    paragraph: schema-pinned, low reasoning effort, narrating the regime the rules already chose.
+    A failover model stands behind the primary. Then a deterministic validator re-checks the
+    writing:</p>
+    <ul>
+      <li>every number is verified against the source data within a fixed tolerance</li>
+      <li>every date reference is checked against the input's own reporting periods</li>
+      <li>indicator references are checked against a whitelist</li>
+      <li>the text is scanned for investment-advice phrasing, which is banned</li>
+      <li>length caps are enforced</li>
+    </ul>
+    <p>An output that fails any check gets one retry, then a deterministic template card takes
+    its place. The reader never sees an error, and a failed data run keeps the previous
+    briefing on screen rather than publishing a degraded one.</p>
+
+    <h2>Cadence</h2>
+    <p>The pipeline runs twice a day on a schedule aligned to U.S. data releases, morning and
+    afternoon Eastern time. It is not a real-time feed, it does not forecast, and it does not
+    give investment advice.</p>
+
+    <h2>Engineering notes</h2>
+    <ul>
+      <li>More than 400 automated tests run the entire pipeline offline with injected fake data sources</li>
+      <li>Committed JSON Schema contracts sit between pipeline stages</li>
+      <li>Two runtime dependencies, total</li>
+      <li>The page you are reading is a hand-built installable PWA: no framework, no bundler, no accounts, offline-capable</li>
+    </ul>
+
+    <p class="colophon">Built and operated by <a href="https://modeo.io">Modeo</a>, an
+    enterprise AI consultancy. Read the <a
+    href="https://modeo.io/case-studies/daily-macro-briefing/">build case study</a>, or see
+    the <a href="./">live briefing</a>.</p>
+  </main>
+</body>
+</html>

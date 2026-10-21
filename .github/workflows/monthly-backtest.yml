@@ -1,0 +1,71 @@
+# Monthly classifier back-test (R3 / carry-forward #1).
+#
+# WHY THIS EXISTS AS A SCHEDULED JOB: scripts/backtest_thresholds.py is the LOCKED v1.1
+# classifier's D9 validation gate, and it was only ever run by hand. It broke on 2026-07-21 (the
+# day gold_spot added a synthetic non-FRED series id) and stayed broken until 2026-08-06 —
+# sixteen days in which the gate could not run, discovered only by accident while answering an
+# unrelated question. A gate nobody runs is not a gate; the same lesson the weekly regression
+# already learned. Running it in CI means the next break fails loudly on the 1st of the month
+# instead of waiting for someone to notice.
+#
+# Read-only: replays ~12y of FRED history through the classifier and prints the regime
+# distribution + transitions. Commits nothing, publishes nothing, touches no briefing.
+
+name: monthly-backtest
+
+on:
+  # 1st of the month, 11:00 UTC — comfortably before the 13:45 UTC briefing window so the two
+  # never contend, though FRED (unlike Gemini) has no daily cap worth pacing around.
+  # DISABLED in claude-econ-dashboard until AWS + GitHub secrets are wired (see README,
+  # 'Before anything runs'). Uncomment the schedule block to enable.
+  # schedule:
+  #   - cron: "0 11 1 * *"
+  workflow_dispatch:
+    inputs:
+      years:
+        description: "How many years of history to replay"
+        type: string
+        default: "12"
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Install package
+        run: pip install -e . -c constraints.txt
+
+      - name: Back-test the locked classifier
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: |
+          YEARS="${{ inputs.years || '12' }}"
+          python scripts/backtest_thresholds.py --years "$YEARS" | tee backtest.out
+
+      # The distribution is the point, so put it where it is read without opening a log.
+      - name: Publish the result to the run summary
+        if: ${{ always() }}
+        run: |
+          {
+            echo '### Regime classifier back-test (locked v1.1)'
+            echo '```'
+            cat backtest.out 2>/dev/null || echo 'no output — the back-test did not get that far'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # The script prints this and still exits 0 — deliberately, since its exit code is the
+      # harness contract for a D9-signed tool. Surfacing it as an annotation means a threshold
+      # problem is visible in the Actions list rather than buried in stdout nobody opens.
+      - name: Flag an oscillation smell
+        if: ${{ always() }}
+        run: |
+          if grep -q "OSCILLATION SMELL" backtest.out 2>/dev/null; then
+            echo "::warning::Back-test reports >4 regime transitions/yr — thresholds may need damping (O3 recalibration, D9 re-sign-off)."
+          fi

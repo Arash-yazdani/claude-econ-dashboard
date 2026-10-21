@@ -1,0 +1,159 @@
+# Weekly L1+L2 regression gate (PRD q26 / Runbook 6).
+#
+# WHY THIS EXISTS AS A SCHEDULED JOB: `scripts/run_judge.py` is the gate Runbook 6 requires
+# before any prompt ships — but it was only ever run by hand, and it silently stopped being
+# run. eval_log.csv's last entry was prompt v1.4.1 (2026-06-24) while production had been
+# serving v1.4.2 for five weeks. A gate nobody runs is not a gate. This makes it self-driving
+# and gives it a dead-man's switch (macro-weekly-regression) so the NEXT five-week gap pages
+# hello@modeo.io instead of going unnoticed.
+#
+# It does NOT publish anything and never touches public/ — it only appends verdicts to
+# eval_log.csv, which the monitoring dashboard reads for judge means / below-3 rate / kappa.
+
+name: weekly-regression
+
+on:
+  # Monday 12:00 UTC = 08:00 ET (EDT) / 07:00 ET (EST). Deliberately well clear of the
+  # 14:45-16:15 UTC AM briefing window so the two jobs never contend for the same free-tier
+  # Gemini RPD quota (PRD q47: warn at 50%, hard-stop at 80%).
+  # DISABLED in claude-econ-dashboard until AWS + GitHub secrets are wired (see README,
+  # 'Before anything runs'). Uncomment the schedule block to enable.
+  # schedule:
+  #   - cron: "0 12 * * 1"
+  # Manual trigger exists so Runbook 6 step 2 can run the PROMPT-CHANGE tier in CI, using the
+  # repo's own secrets — no local .env, and the certification lands in the Actions log where the
+  # SO8 ack can cite it. (The original's 'run early in the UTC day' rule protected a shared free-tier
+  # Gemini quota; on Bedrock the binding limit is the account's per-model quota in AWS_REGION.)
+  workflow_dispatch:
+    inputs:
+      strict:
+        description: "Prompt-change gate (Runbook 6): require 0 below-3. Leave off for the standing <=10% check."
+        type: boolean
+        default: false
+      override_window_guard:
+        description: "Run even inside a production briefing window (14:30-16:30 / 21:15-23:15 UTC). The 2026-08-07 PM briefing published its first-ever FALLBACK because a gate run drained both providers minutes before the window."
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+# The daily briefing also commits; never let the two race on eval_log.csv.
+concurrency:
+  group: eval-log-writers
+  cancel-in-progress: false
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      # PRODUCTION EATS FIRST. The gate and the briefing share the same free-tier quota, and on
+      # 2026-08-07 a strict run fired at 21:28 UTC — two minutes before the PM window — drained
+      # both providers, and production published its first fallback in 111 runs. A gate exists to
+      # protect the product; a gate that starves the product has that backwards.
+      - name: Refuse to run inside a production briefing window
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.override_window_guard != true }}
+        run: |
+          # AM window moved +1h on 2026-08-12 (briefing now fires 14:45-16:15 UTC, not 13:45-15:15)
+          # when the AM run was pushed to 10:45 ET to clear FRED's ~10:10 ET release ingest.
+          HHMM=$(date -u +%H%M)
+          if { [ "$HHMM" -ge 1430 ] && [ "$HHMM" -le 1630 ]; } || { [ "$HHMM" -ge 2115 ] && [ "$HHMM" -le 2315 ]; }; then
+            echo "::error::Inside a production briefing window ($HHMM UTC). The briefing and this gate share one free-tier quota, and a gate run here can starve the publish (it did, 2026-08-07). Re-run outside 14:30-16:30 / 21:15-23:15 UTC, or set override_window_guard."
+            exit 1
+          fi
+          echo "clear of the briefing windows ($HHMM UTC)"
+
+      - name: Checkout repo
+        uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Install package
+        run: pip install -e . -c constraints.txt
+
+      # BEDROCK LIVENESS PROBE. The original repo lost its Groq failover twice to silent
+      # decommissions (llama-4-scout, then llama-3.3-70b-versatile, found dead 2026-08-25). A standby
+      # that is never exercised is dead until proven otherwise, so this job sends one count_tokens
+      # per Claude model (writer, failover, judge) in AWS_REGION: a 404 alerts Slack and FAILS the
+      # job, and the weekly-regression healthcheck then pages. No generation is requested.
+      - name: Verify the Claude model ids are still served on Bedrock
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ALERT_SLACK_WEBHOOK: ${{ secrets.ALERT_SLACK_WEBHOOK }}
+        run: python scripts/probe_models.py --fail
+
+      # Optional tracing SDK — separate + continue-on-error so a packaging hiccup on an
+      # OBSERVABILITY extra can never fail the quality gate itself.
+      - name: Install optional tracing extra
+        continue-on-error: true
+        run: pip install -e ".[langsmith]" -c constraints.txt
+
+      # run_judge.py exits 1 when the ship gate fails. We WANT the job to go red in that case
+      # (it is the alert, alongside the /fail ping and the GitHub failure email), but the
+      # verdicts must still be committed first — hence continue-on-error + an explicit gate
+      # step after the commit.
+      - name: Run 12-case regression
+        id: regression
+        continue-on-error: true
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          HEALTHCHECKS_URL_REGRESSION: ${{ secrets.HEALTHCHECKS_URL_REGRESSION }}
+          ALERT_SLACK_WEBHOOK: ${{ secrets.ALERT_SLACK_WEBHOOK }}
+          LANGSMITH_TRACING: "true"
+          LANGSMITH_ENDPOINT: https://api.smith.langchain.com
+          LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
+          LANGSMITH_PROJECT: macro-daily-briefing
+        # --pace 20 for EVERY run. 24 calls at 10s pacing is ~10/min, exactly Gemini's free-tier
+        # RPM ceiling, so the TAIL cases (A1/A2) 429 at the end regardless of daily quota. The
+        # scheduled run used to keep 10s on the theory that it "tolerates a partial" — but a
+        # partial is INCONCLUSIVE, INCONCLUSIVE pings /fail, and /fail pages: it paged three
+        # Mondays running (08-17, 08-24, 08-31) on 429s alone, with zero quality failures in the
+        # cases that did run. 20s costs ~2 extra minutes a week and measures 12/12.
+        #
+        # The SCHEDULED run is deliberately NOT strict: the standing gate (<=10% below-3) is the
+        # right bar for a weekly health check, and pinning it to zero would page every week a
+        # single stochastic below-3 lands. --strict is the PROMPT-CHANGE tier and is opt-in via
+        # workflow_dispatch. `inputs.strict` is empty on a schedule trigger, so the test below is
+        # false. See docs/eval/regression-cases-v1.0.md.
+        run: |
+          STRICT=""
+          PACE=20
+          if [ "${{ inputs.strict }}" = "true" ]; then
+            STRICT="--strict"
+            echo "::notice::Running the PROMPT-CHANGE gate (0 below-3) — Runbook 6 step 2."
+          fi
+          python scripts/run_judge.py --pace "$PACE" $STRICT
+
+      # Always commit the verdicts, pass or fail — a FAILED gate's rows are the most valuable
+      # evidence we have, and losing them on failure is exactly the audit-log blindness that
+      # already bit logs/runs.jsonl.
+      - name: Commit eval verdicts
+        if: ${{ always() }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -e eval_log.csv ]; then git add eval_log.csv; fi
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(eval): weekly regression $(date -u +%Y-%m-%d)"
+            git pull --rebase --autostash origin main || true
+            git push || true
+          fi
+
+      # Now surface the gate result as the job's own status. Deliberately does NOT claim the
+      # prompt failed: run_judge exits nonzero for FAIL *and* INCONCLUSIVE (a rate-limited suite
+      # cannot certify a ship either), and only the run log knows which. Asserting "FAILED" here
+      # would re-introduce the false accusation the three-way verdict exists to prevent.
+      - name: Fail the job when the gate did not certify
+        if: ${{ steps.regression.outcome == 'failure' }}
+        run: |
+          echo "::error::Weekly regression did not certify the q26 ship gate. Check the 'SHIP GATE:' line in the run log — FAIL = a real quality regression; INCONCLUSIVE = cases could not be measured (e.g. free-tier 429), so re-run on fresh quota. Verdicts are committed to eval_log.csv either way."
+          exit 1

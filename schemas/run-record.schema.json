@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RunRecord",
+  "$comment": "Machine-readable copy of the RunRecord dataclass in src/macro_pipeline/observability.py (B8 — the PRD §339 audit row / one JSONL line per briefing in logs/runs.jsonl). Keep in lockstep with that dataclass and RunRecord.to_json().",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "timestamp",
+    "run_label",
+    "as_of_date",
+    "input_hash",
+    "source",
+    "model",
+    "prompt_version",
+    "validator_status",
+    "validator_failed",
+    "regime_today",
+    "regime_yesterday",
+    "drivers",
+    "any_stale",
+    "latency_ms",
+    "llm_calls",
+    "error",
+    "output",
+    "sources",
+    "indicators_blanked",
+    "releases_last_24h"
+  ],
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "$comment": "ISO-8601 seconds precision, e.g. 2026-06-17T10:15:00-04:00"
+    },
+    "run_label": {
+      "type": "string",
+      "enum": [
+        "AM",
+        "PM",
+        "manual"
+      ]
+    },
+    "as_of_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "input_hash": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{64})?$",
+      "$comment": "sha256 hex of the canonical (sort_keys) BriefingRequest; empty on an error_record (no request to hash)"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "llm",
+        "fallback",
+        "refusal",
+        "error"
+      ]
+    },
+    "model": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "$comment": "production model id; null on fallback"
+    },
+    "prompt_version": {
+      "type": "string"
+    },
+    "validator_status": {
+      "type": "string",
+      "enum": [
+        "valid",
+        "refusal",
+        "invalid",
+        "skipped",
+        "error"
+      ]
+    },
+    "validator_failed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "$comment": "failed O-check ids only, e.g. [\"O5\",\"O8\"]; [] when none"
+    },
+    "regime_today": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "regime_yesterday": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "drivers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "any_stale": {
+      "type": "boolean"
+    },
+    "latency_ms": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "llm_calls": {
+      "type": "integer",
+      "minimum": 0,
+      "$comment": "best-effort quota-accounting count: produce_briefing invocations this run (≈1), not the exact provider HTTP-call count (retry/failover can be higher)"
+    },
+    "error": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "$comment": "short error string when the run errored, else null"
+    },
+    "output": {
+      "type": [
+        "object",
+        "string",
+        "null"
+      ],
+      "$comment": "§339 rendered briefing: validated dict (llm) | fallback/refusal card text | null when skipped/errored"
+    },
+    "sources": {
+      "type": "object",
+      "$comment": "Per-external-source health for this run, keyed by source name (fred | treasury | gold_api | ...). Populated by observability.record_source() at each swallow point — without it a degraded vendor leaves no trace at all.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "calls",
+          "failures",
+          "degraded",
+          "error"
+        ],
+        "properties": {
+          "calls": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "failures": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "degraded": {
+            "type": "boolean",
+            "$comment": "sticky: true when we did not get the good data (exception, empty tip, missing history)"
+          },
+          "error": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "$comment": "first error string this run, truncated to 140 chars"
+          }
+        }
+      }
+    },
+    "indicators_blanked": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "$comment": "display-tier indicator ids dropped to null by the plausibility guard (pipeline.py); [] when none"
+    },
+    "stale_indicators": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "$comment": "ids past their own stale_after_days, ANY tier — wider than any_stale (core-only, UI banner). The alerting predicate as of 2026-08-14: a transient source failure no longer pages, so a vendor outage must surface as its rows aging out. Not in `required`: rows written before 2026-08-14 do not carry it."
+    },
+    "releases_last_24h": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "$comment": "the releases the LLM was shown. The row stores only the input HASH, so a later rebuild cannot recover these — and C4 (whats_new fires IFF a release did) is unjudgeable without them."
+    },
+    "rejected_outputs": {
+      "type": "array",
+      "items": {
+        "type": [
+          "object",
+          "string",
+          "null"
+        ]
+      },
+      "$comment": "The LLM drafts the validator REJECTED on a fallback run, in attempt order (invalid only; a refusal is a correct output). `output` is what the reader saw; this is what the model said and lost. Added 2026-09 after two fallbacks (08-25, 09-02) had to be diagnosed by reproducing the failure signature. Not in `required`: rows written before it do not carry it."
+    },
+    "llm_usage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["model", "input_tokens", "output_tokens", "latency_ms", "stop_reason"],
+        "properties": {
+          "model": {"type": "string"},
+          "input_tokens": {"type": ["integer", "null"], "minimum": 0},
+          "output_tokens": {"type": ["integer", "null"], "minimum": 0},
+          "latency_ms": {"type": ["integer", "null"], "minimum": 0},
+          "stop_reason": {"type": ["string", "null"]}
+        }
+      },
+      "$comment": "One entry per Claude call this run (retries and failover included), from response.usage. Added with ADR-007 (Claude on Bedrock) for cost accounting. Not in `required`: Gemini-era rows do not carry it."
+    }
+  }
+}

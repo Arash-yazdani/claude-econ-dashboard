@@ -1,0 +1,161 @@
+{
+  "regime_yesterday": "soft_landing",
+  "snapshot": {
+    "brent_oil": {
+      "last_release_date": "2026-10-15",
+      "observation_date": "2026-10-14",
+      "period_label": "2026-10-14",
+      "value": 126.55
+    },
+    "capacity_util": {
+      "last_release_date": "2026-10-16",
+      "observation_date": "2026-09-01",
+      "period_label": "Sep 2026",
+      "value": 76.8504
+    },
+    "construction_employment": {
+      "last_release_date": "2026-10-02",
+      "observation_date": "2026-09-01",
+      "period_label": "Sep 2026",
+      "value": 8364.0
+    },
+    "core_cpi_yoy": {
+      "last_release_date": "2026-10-14",
+      "observation_date": "2026-09-01",
+      "period_label": "Sep 2026",
+      "value": 2.56436
+    },
+    "cpi_yoy": {
+      "last_release_date": "2026-10-14",
+      "observation_date": "2026-09-01",
+      "period_label": "Sep 2026",
+      "value": 3.73768
+    },
+    "fed_funds": {
+      "last_release_date": "2026-10-16",
+      "observation_date": "2026-10-16",
+      "period_label": "2026-10-16",
+      "value": 3.88
+    },
+    "federal_debt_gdp": {
+      "last_release_date": "2026-10-15",
+      "observation_date": "2026-10-15",
+      "period_label": "Q4 2026",
+      "value": 40388317.7
+    },
+    "gold_spot": {
+      "last_release_date": "2026-10-19",
+      "observation_date": "2026-10-19",
+      "period_label": "2026-10-19",
+      "value": 4145.600098
+    },
+    "housing_starts": {
+      "last_release_date": "2026-09-17",
+      "observation_date": "2026-08-01",
+      "period_label": "Aug 2026",
+      "value": 1275.0
+    },
+    "hy_spread": {
+      "last_release_date": "2026-10-19",
+      "observation_date": "2026-10-16",
+      "period_label": "2026-10-16",
+      "value": 3.31
+    },
+    "jobless_claims": {
+      "last_release_date": "2026-10-15",
+      "observation_date": "2026-10-10",
+      "period_label": "2026-10-10",
+      "value": 199000.0
+    },
+    "labor_participation": {
+      "last_release_date": "2026-10-02",
+      "observation_date": "2026-09-01",
+      "period_label": "Sep 2026",
+      "value": 61.8
+    },
+    "market_cap": {
+      "last_release_date": "2026-09-11",
+      "observation_date": "2026-04-01",
+      "period_label": "Q2 2026",
+      "value": 83050847.0
+    },
+    "mfg_employment": {
+      "last_release_date": "2026-10-02",
+      "observation_date": "2026-09-01",
+      "period_label": "Sep 2026",
+      "value": 12652.0
+    },
+    "mortgage_30y": {
+      "last_release_date": "2026-10-15",
+      "observation_date": "2026-10-15",
+      "period_label": "2026-10-15",
+      "value": 7.4
+    },
+    "nasdaq": {
+      "last_release_date": "2026-10-15",
+      "observation_date": "2026-10-15",
+      "period_label": "2026-10-15",
+      "value": 26713.03
+    },
+    "payrolls": {
+      "last_release_date": "2026-10-02",
+      "observation_date": "2026-09-01",
+      "period_label": "Sep 2026",
+      "value": 29.0
+    },
+    "real_gdp_yoy": {
+      "last_release_date": "2026-09-30",
+      "observation_date": "2026-04-01",
+      "period_label": "Q2 2026",
+      "value": 2.19157
+    },
+    "sp500": {
+      "last_release_date": "2026-10-16",
+      "observation_date": "2026-10-16",
+      "period_label": "2026-10-16",
+      "value": 7659.44
+    },
+    "tips_10y_real": {
+      "last_release_date": "2026-10-16",
+      "observation_date": "2026-10-16",
+      "period_label": "2026-10-16",
+      "value": 2.74
+    },
+    "treasury_10y": {
+      "last_release_date": "2026-10-16",
+      "observation_date": "2026-10-16",
+      "period_label": "2026-10-16",
+      "value": 5.09
+    },
+    "treasury_2y": {
+      "last_release_date": "2026-10-16",
+      "observation_date": "2026-10-16",
+      "period_label": "2026-10-16",
+      "value": 4.74
+    },
+    "umich_sentiment": {
+      "last_release_date": "2026-09-25",
+      "observation_date": "2026-08-01",
+      "period_label": "Aug 2026",
+      "value": 51.7
+    },
+    "unemployment": {
+      "last_release_date": "2026-10-02",
+      "observation_date": "2026-09-01",
+      "period_label": "Sep 2026",
+      "value": 4.2
+    },
+    "usd_index": {
+      "last_release_date": "2026-10-13",
+      "observation_date": "2026-10-09",
+      "period_label": "2026-10-09",
+      "value": 121.6023
+    },
+    "vix": {
+      "last_release_date": "2026-10-19",
+      "observation_date": "2026-10-16",
+      "period_label": "2026-10-16",
+      "value": 19.99
+    }
+  }
+}

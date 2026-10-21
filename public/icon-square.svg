@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Full-bleed square master for raster icons (apple-touch + manifest). Chart sits inside the
+       center safe zone so a circular/squircle mask never clips it. iOS rounds the corners. -->
+  <rect width="512" height="512" fill="#0b0c0e"/>
+  <polyline points="150,326 208,300 256,318 320,232 372,200" fill="none" stroke="#6fc2a6"
+            stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="372" cy="200" r="21" fill="#6fc2a6"/>
+</svg>

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en" data-regime="indeterminate" data-state="loading">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0c0e" />
+  <meta name="description" content="The U.S. economy in one quotable read. A daily macro briefing on inflation, jobs, growth, and rates — refreshed twice a day." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Econ" />
+  <title>Claude Econ Dashboard</title>
+  <link rel="canonical" href="https://macro.modeo.io/" />
+
+  <!-- Social link preview (Open Graph — iMessage/SMS, Slack, etc.) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Claude Econ Dashboard" />
+  <meta property="og:title" content="Claude Econ Dashboard" />
+  <meta property="og:description" content="The U.S. economy in one quotable read. A daily macro briefing on inflation, jobs, growth, and rates — refreshed twice a day." />
+  <meta property="og:url" content="https://macro.modeo.io/" />
+  <meta property="og:image" content="https://macro.modeo.io/og-cover-wide.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Claude Econ Dashboard — the U.S. economy in one quotable read." />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Claude Econ Dashboard" />
+  <meta name="twitter:description" content="The U.S. economy in one quotable read — inflation, jobs, growth, and rates, refreshed twice a day." />
+  <meta name="twitter:image" content="https://macro.modeo.io/og-cover-wide.png" />
+
+  <link rel="manifest" href="manifest.webmanifest" />
+  <!-- favicons: SVG for modern browsers (Chrome), PNG fallbacks (Safari), PNG apple-touch (iOS) -->
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="ambient" aria-hidden="true"></div>
+
+  <main class="app" id="app">
+    <!-- Briefing card -->
+    <section class="card" id="card" aria-live="polite" aria-label="Daily macro briefing">
+      <span class="card__bar" aria-hidden="true"></span>
+      <p class="eyebrow"><span class="dot"></span>Claude Econ Dashboard</p>
+      <div class="card__body" id="card-body">
+        <div class="skeleton skeleton--headline"></div>
+        <div class="skeleton skeleton--line"></div>
+        <div class="skeleton skeleton--line short"></div>
+      </div>
+    </section>
+
+    <!-- Regime snapshot (V2 Tier 0) — the "CNBC economist" read -->
+    <div class="regime" id="regime" hidden></div>
+
+    <!-- Talking-points strip (deterministic — notable moves + key levels, built from the feed) -->
+    <section class="talking-points" id="talking-points" hidden aria-label="Talking points"></section>
+
+    <!-- Indicator rows, grouped by the Charter Rev 3 data-set categories (renderRows builds the
+         category sections; the skeleton keeps first-paint height until the feed arrives). -->
+    <div id="rows" aria-label="Indicators by category">
+      <ul class="rows">
+        <li class="row row--skeleton"></li>
+        <li class="row row--skeleton"></li>
+        <li class="row row--skeleton"></li>
+        <li class="row row--skeleton"></li>
+        <li class="row row--skeleton"></li>
+      </ul>
+    </div>
+
+    <hr class="rule" />
+    <div class="footerbar">
+      <footer class="footer" id="footer">Loading the latest read…</footer>
+      <button class="refresh" id="refresh" type="button" aria-label="Refresh" title="Refresh">↻</button>
+    </div>
+    <p class="colophon"><a href="methodology">How this briefing is made</a></p>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- Detail sheet (V2 Tier 4) — Apple-Stocks-style: timeframe chart + stats + dive-deeper links.
+       Populated/toggled in app.js; hidden until a row is tapped. -->
+  <div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheet-name">
+    <div class="sheet__backdrop" data-close></div>
+    <div class="sheet__panel">
+      <span class="sheet__handle" aria-hidden="true"></span>
+      <button class="sheet__close" type="button" data-close aria-label="Close detail">✕</button>
+      <header class="sheet__head">
+        <p class="sheet__name" id="sheet-name"></p>
+        <p class="sheet__val" id="sheet-val"></p>
+        <p class="sheet__sub" id="sheet-sub"></p>
+      </header>
+      <div class="sheet__tf" id="sheet-tf" role="tablist" aria-label="Chart timeframe"></div>
+      <div class="sheet__chart">
+        <div id="sheet-chart"></div>
+        <!-- scrub readout overlay (date + value) — survives the SVG re-render; positioned in CSS -->
+        <div class="chart__readout" id="chart-readout" hidden aria-hidden="true"></div>
+      </div>
+      <dl class="sheet__stats" id="sheet-stats"></dl>
+      <nav class="sheet__links" id="sheet-links" aria-label="Dive deeper"></nav>
+    </div>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

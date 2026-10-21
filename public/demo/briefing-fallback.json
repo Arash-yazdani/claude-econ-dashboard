@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "state": "fallback",
+  "generated_at": "2026-06-17T10:15:00-04:00",
+  "run_label": "AM",
+  "data_through": "May 2026",
+  "regime": "soft_landing",
+  "regime_label": "Soft landing",
+  "drivers": ["unemployment", "core_cpi_yoy"],
+  "briefing": null,
+  "fallback_text": "Regime: Soft landing. CPI: 4.2%. Unemployment: 4.3%."
+}

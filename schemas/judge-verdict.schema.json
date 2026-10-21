@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "JudgeVerdict",
+  "$comment": "Machine-readable copy of docs/prompts/llm-judge-prompt-v1.0.md (v1.0, locked D11/SCRUM-23). The Layer-2 judge responseSchema (B7). Scores subjective C1/C3/C4/C5 only; C2/C6 are the Layer-1 validator's. Keep in lockstep with that doc.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["c1_quotability", "c3_tone", "c4_conditionals", "c5_length_format", "rationale", "lowest_criterion", "flag_below_3"],
+  "properties": {
+    "c1_quotability": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+    "c3_tone": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+    "c4_conditionals": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+    "c5_length_format": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "rationale": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["c1", "c3", "c4", "c5"],
+      "properties": {
+        "c1": { "type": "string" },
+        "c3": { "type": "string" },
+        "c4": { "type": "string" },
+        "c5": { "type": "string" }
+      }
+    },
+    "lowest_criterion": { "type": "string", "enum": ["c1", "c3", "c4", "c5"] },
+    "flag_below_3": { "type": "boolean" }
+  }
+}

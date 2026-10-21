@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "state": "default",
+  "generated_at": "2026-06-12T17:32:00-04:00",
+  "run_label": "PM",
+  "data_through": "Jun 2026",
+  "regime": "stagflation_risk",
+  "regime_label": "Stagflation territory",
+  "drivers": ["cpi_yoy", "core_cpi_yoy"],
+  "briefing": {
+    "headline": "Stagflation territory, driven by rising CPI.",
+    "quotable_numbers": [
+      { "indicator_id": "cpi_yoy", "sentence": "Headline CPI was 3.4 percent for Jun 2026." },
+      { "indicator_id": "core_cpi_yoy", "sentence": "Core CPI registered 3.1 percent for May 2026." }
+    ],
+    "whats_new": "Today: CPI hotter, from 2.9 percent to 3.4 percent.",
+    "regime_change": "The call moved from Soft landing to Stagflation territory as CPI climbed while Core CPI held firm."
+  },
+  "fallback_text": null
+}

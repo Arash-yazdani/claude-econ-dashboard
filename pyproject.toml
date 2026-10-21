@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "macro-pipeline"
+version = "0.2.0"
+description = "Claude Econ Dashboard — FRED ingest → classifier → Claude on Bedrock → validator → briefing.json (derived from Economy-Dashboard)"
+requires-python = ">=3.11"
+dependencies = [
+    "requests>=2.31",
+    "jsonschema>=4.21",
+    # Claude on Amazon Bedrock via AnthropicBedrockMantle (ADR-007). The legacy Gemini/Groq clients
+    # in legacy_llm_client.py use plain `requests`, so the comparison script needs no extra deps.
+    "anthropic[bedrock]>=1.17",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+# LangSmith eval/tracing — OPTIONAL for the same reason: tracing must never be able to break a
+# run, and the suite must pass without it (tracing.py imports langsmith lazily and no-ops when
+# absent). Free Developer tier, no card on file (SO9) — hard-capped at 5k traces/mo, we use ~200.
+langsmith = [
+    "langsmith>=0.1",
+]
+
+[project.scripts]
+macro-pipeline = "macro_pipeline.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
