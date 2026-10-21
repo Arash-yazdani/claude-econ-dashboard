@@ -232,7 +232,7 @@ def test_parses_first_text_block_and_records_usage():
     assert len(usage) == 1
     u = usage[0]
     assert (u["model"], u["input_tokens"], u["output_tokens"], u["stop_reason"]) == \
-        ("anthropic.claude-opus-5-5", 1234, 210, "end_turn")
+        ("anthropic.claude-haiku-5-5", 1234, 210, "end_turn")
     assert isinstance(u["latency_ms"], int)
 
 
@@ -244,7 +244,7 @@ def test_refusal_and_max_tokens_raise_so_failover_runs(stop_reason):
         primary.generate("s", "u")
     primary = _claude(FakeSDK(_resp(stop_reason=stop_reason)))
     res = generate_briefing(T1, primary=primary, failover=failover)
-    assert res.model == "anthropic.claude-haiku-5-5"
+    assert res.model == "anthropic.claude-sonnet-5-5"
     assert res.output == NORMAL
 
 
@@ -260,7 +260,7 @@ def test_sdk_errors_wrap_into_briefing_llm_error_and_fail_over(exc):
         _claude(FakeSDK(exc)).generate("s", "u")
     res = generate_briefing(T1, primary=_claude(FakeSDK(exc)),
                             failover=_claude(FakeSDK(_resp()), model=llm_client.FAILOVER_MODEL))
-    assert res.model == "anthropic.claude-haiku-5-5"
+    assert res.model == "anthropic.claude-sonnet-5-5"
 
 
 def test_non_json_text_is_an_error():
