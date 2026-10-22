@@ -15,21 +15,27 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           python - <<'PY'
-          import os, anthropic, boto3
+          import os, json, anthropic, boto3
           reg = os.environ["AWS_REGION"]
-          ids = []
           try:
               b = boto3.client("bedrock", region_name=reg)
               for p in b.list_inference_profiles(typeEquals="SYSTEM_DEFINED", maxResults=1000)["inferenceProfileSummaries"]:
-                  if "haiku" in p["inferenceProfileId"]:
-                      print("PROFILE", p["inferenceProfileId"]); ids.append(p["inferenceProfileId"])
+                  if "anthropic" in p["inferenceProfileId"]:
+                      print("PROFILE", p["inferenceProfileId"])
           except Exception as e:
-              print("LIST FAIL", type(e).__name__, str(e)[:300])
+              print("LIST FAIL", type(e).__name__, str(e)[:200])
           c = anthropic.AnthropicBedrock(aws_region=reg)
-          for m in ids or ["us.anthropic.claude-haiku-4-5-20251001-v1:0", "global.anthropic.claude-haiku-4-5-20251001-v1:0"]:
-              try:
-                  r = c.messages.create(model=m, max_tokens=5, messages=[{"role": "user", "content": "hi"}])
-                  print("OK  ", m, r.stop_reason)
-              except Exception as e:
-                  print("FAIL", m, type(e).__name__, str(e)[:300])
+          schema = {"type": "object", "properties": {"x": {"type": "string"}}, "required": ["x"], "additionalProperties": False}
+          variants = {
+              "plain": {},
+              "format": {"output_config": {"format": {"type": "json_schema", "schema": schema}}},
+              "format+effort": {"output_config": {"effort": "low", "format": {"type": "json_schema", "schema": schema}}},
+          }
+          for m in ["us.anthropic.claude-haiku-4-5-20251001-v1:0", "global.anthropic.claude-haiku-4-5-20251001-v1:0"]:
+              for name, extra in variants.items():
+                  try:
+                      r = c.messages.create(model=m, max_tokens=50, messages=[{"role": "user", "content": "Reply with x=hi"}], **extra)
+                      print("OK  ", m, name, r.stop_reason, (r.content[0].text if r.content else "")[:60])
+                  except Exception as e:
+                      print("FAIL", m, name, type(e).__name__, str(e)[:200])
           PY
