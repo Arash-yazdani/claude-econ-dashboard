@@ -23,7 +23,7 @@ jobs:
                   if "anthropic" in p["inferenceProfileId"]:
                       print("PROFILE", p["inferenceProfileId"])
           except Exception as e:
-              print("LIST FAIL", type(e).__name__, str(e)[:200])
+              print("LIST FAIL", type(e).__name__, str(e)[:700])
           c = anthropic.AnthropicBedrock(aws_region=reg)
           schema = {"type": "object", "properties": {"x": {"type": "string"}}, "required": ["x"], "additionalProperties": False}
           variants = {
@@ -37,5 +37,5 @@ jobs:
                       r = c.messages.create(model=m, max_tokens=50, messages=[{"role": "user", "content": "Reply with x=hi"}], **extra)
                       print("OK  ", m, name, r.stop_reason, (r.content[0].text if r.content else "")[:60])
                   except Exception as e:
-                      print("FAIL", m, name, type(e).__name__, str(e)[:200])
+                      print("FAIL", m, name, type(e).__name__, str(e)[:700])
           PY
