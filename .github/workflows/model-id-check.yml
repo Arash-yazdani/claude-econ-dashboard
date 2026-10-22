@@ -8,16 +8,25 @@ jobs:
     steps:
       - uses: actions/setup-python@v5
         with: { python-version: "3.11" }
-      - run: pip -q install "anthropic[bedrock]>=1.17"
+      - run: pip -q install "anthropic[bedrock]>=1.17" boto3
       - env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           python - <<'PY'
-          import os, anthropic
-          c = anthropic.AnthropicBedrockMantle(aws_region=os.environ["AWS_REGION"])
-          for m in ["us.anthropic.claude-haiku-4-5", "global.anthropic.claude-haiku-4-5", "anthropic.claude-haiku-4-5", "us.anthropic.claude-haiku-5-5", "global.anthropic.claude-haiku-5-5"]:
+          import os, anthropic, boto3
+          reg = os.environ["AWS_REGION"]
+          ids = []
+          try:
+              b = boto3.client("bedrock", region_name=reg)
+              for p in b.list_inference_profiles(typeEquals="SYSTEM_DEFINED", maxResults=1000)["inferenceProfileSummaries"]:
+                  if "haiku" in p["inferenceProfileId"]:
+                      print("PROFILE", p["inferenceProfileId"]); ids.append(p["inferenceProfileId"])
+          except Exception as e:
+              print("LIST FAIL", type(e).__name__, str(e)[:300])
+          c = anthropic.AnthropicBedrock(aws_region=reg)
+          for m in ids or ["us.anthropic.claude-haiku-4-5-20251001-v1:0", "global.anthropic.claude-haiku-4-5-20251001-v1:0"]:
               try:
                   r = c.messages.create(model=m, max_tokens=5, messages=[{"role": "user", "content": "hi"}])
                   print("OK  ", m, r.stop_reason)
