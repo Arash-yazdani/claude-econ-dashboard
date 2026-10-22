@@ -18,8 +18,8 @@ on:
   # never contend, though FRED (unlike Gemini) has no daily cap worth pacing around.
   # DISABLED in claude-econ-dashboard until AWS + GitHub secrets are wired (see README,
   # 'Before anything runs'). Uncomment the schedule block to enable.
-  # schedule:
-  #   - cron: "0 11 1 * *"
+  schedule:
+    - cron: "0 11 1 * *"
   workflow_dispatch:
     inputs:
       years:

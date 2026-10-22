@@ -24,17 +24,17 @@ on:
   # after a ~2h delay and across EDT/EST, so a delayed firing still publishes instead of skipping.
   # DISABLED in claude-econ-dashboard until AWS + GitHub secrets are wired (see README,
   # 'Before anything runs'). Uncomment the schedule block to enable.
-  # schedule:
-  #   # AM targets ~10:45 ET in BOTH tz halves. NOT the market open: FRED ingests the 08:30 ET BLS
-  #   # releases (CPI, jobs) around 10:10 ET, so the old 09:45 ET slot read last month's print every
-  #   # release morning (2026-08-12: served June CPI while July was already public). resolve_run_label's
-  #   # 10:30 floor makes the wrong-half firing self-skip, so each session is claimed post-ingest.
-  #   - cron: "45 14 * * *"   # AM ~10:45 EDT — primary AM (EDT); 09:45 EST self-skips (pre-ingest)
-  #   - cron: "45 15 * * *"   # AM ~10:45 EST — primary AM (EST); 11:45 EDT de-dupes
-  #   - cron: "15 16 * * *"   # AM buffer — 12:15 EDT / 11:15 EST, both post-ingest; catches a dropped firing
-  #   - cron: "30 21 * * *"   # PM ~17:30 ET (EDT) / 16:30 (EST)  — primary PM
-  #   - cron: "0 22 * * *"    # PM buffer
-  #   - cron: "30 22 * * *"   # PM buffer (EST primary)
+  schedule:
+    # AM targets ~10:45 ET in BOTH tz halves. NOT the market open: FRED ingests the 08:30 ET BLS
+    # releases (CPI, jobs) around 10:10 ET, so the old 09:45 ET slot read last month's print every
+    # release morning (2026-08-12: served June CPI while July was already public). resolve_run_label's
+    # 10:30 floor makes the wrong-half firing self-skip, so each session is claimed post-ingest.
+    - cron: "45 14 * * *"   # AM ~10:45 EDT — primary AM (EDT); 09:45 EST self-skips (pre-ingest)
+    - cron: "45 15 * * *"   # AM ~10:45 EST — primary AM (EST); 11:45 EDT de-dupes
+    - cron: "15 16 * * *"   # AM buffer — 12:15 EDT / 11:15 EST, both post-ingest; catches a dropped firing
+    - cron: "30 21 * * *"   # PM ~17:30 ET (EDT) / 16:30 (EST)  — primary PM
+    - cron: "0 22 * * *"    # PM buffer
+    - cron: "30 22 * * *"   # PM buffer (EST primary)
   # Dispatched by (a) a human for manual recovery, and (b) the Cloudflare cron Worker
   # (cron-worker/) which is the reliable primary scheduler — GitHub's `schedule:` below is a
   # best-effort fallback. The Worker passes force=false so run_daily.py keeps its de-dupe; a

@@ -12,10 +12,10 @@ name: healthcheck-audit
 on:
   # DISABLED in claude-econ-dashboard until AWS + GitHub secrets are wired (see README,
   # 'Before anything runs'). Uncomment the schedule block to enable.
-  # schedule:
-  #   # Every 6 hours: 00:00, 06:00, 12:00, 18:00 UTC. The AM briefing fires ~14:45 UTC and the
-  #   # PM ~21:30 UTC, so the 18:00 run catches a missed AM and the 00:00 run catches a missed PM.
-  #   - cron: "0 0,6,12,18 * * *"
+  schedule:
+    # Every 6 hours: 00:00, 06:00, 12:00, 18:00 UTC. The AM briefing fires ~14:45 UTC and the
+    # PM ~21:30 UTC, so the 18:00 run catches a missed AM and the 00:00 run catches a missed PM.
+    - cron: "0 0,6,12,18 * * *"
   workflow_dispatch: {}
 
 permissions:

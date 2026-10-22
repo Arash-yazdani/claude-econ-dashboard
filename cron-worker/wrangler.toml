@@ -20,8 +20,8 @@ compatibility_date = "2024-11-01"
 # the Worker would keep dispatching at 09:45 ET, publish pre-ingest, and the corrected 10:45 run
 # would de-dupe against it. Reason for the move: FRED ingests the 08:30 ET BLS releases ~10:10 ET.
 # DISABLED in claude-econ-dashboard until secrets are wired (README). Restore to enable:
-# [triggers]
-# crons = ["45 14 * * *", "45 15 * * *", "30 21 * * *", "30 22 * * *"]
+[triggers]
+crons = ["45 14 * * *", "45 15 * * *", "30 21 * * *", "30 22 * * *"]
 
 [vars]
 GITHUB_OWNER = "Arash-yazdani"
