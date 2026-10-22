@@ -152,17 +152,18 @@ def test_both_output_shapes_validate_against_claude_schema():
 
 # --- BedrockClaudeClient with an injected fake SDK client -------------------------------------
 
-def _resp(payload=NORMAL, stop_reason="end_turn", text=None):
+def _resp(payload=NORMAL, stop_reason="tool_use", text=None):
+    """A forced-tool response; `text` replaces the tool input (a str exercises the JSON-string path)."""
     return SimpleNamespace(
         stop_reason=stop_reason,
-        content=[SimpleNamespace(type="thinking", thinking=""),
-                 SimpleNamespace(type="text", text=text if text is not None else json.dumps(payload))],
+        content=[SimpleNamespace(type="text", text="ok"),
+                 SimpleNamespace(type="tool_use", name="emit", input=text if text is not None else payload)],
         usage=SimpleNamespace(input_tokens=1234, output_tokens=210),
     )
 
 
 class FakeSDK:
-    """Stands in for AnthropicBedrockMantle: records kwargs, returns/raises queued items."""
+    """Stands in for AnthropicBedrock: records kwargs, returns/raises queued items."""
 
     def __init__(self, *items):
         self.messages = self
@@ -181,7 +182,7 @@ def _claude(sdk, model=llm_client.PRIMARY_MODEL, **kw):
     return BedrockClaudeClient(model, client=sdk, **kw)
 
 
-_REQ = httpx2.Request("POST", "https://bedrock-mantle.example.invalid/anthropic/v1/messages")
+_REQ = httpx2.Request("POST", "https://bedrock-runtime.example.invalid/model/x/invoke")
 
 
 def test_request_kwargs_have_no_sampling_or_thinking_params():
@@ -190,41 +191,42 @@ def test_request_kwargs_have_no_sampling_or_thinking_params():
     kw = sdk.calls[0]
     for banned in ("temperature", "top_p", "top_k", "thinking"):
         assert banned not in kw
-    assert kw["model"] == "anthropic.claude-haiku-5-5"
+    assert kw["model"] == "us.anthropic.claude-haiku-4-5-20251001-v1:0"
     assert kw["max_tokens"] == 4096
     assert kw["system"] == "sys"
     assert kw["messages"] == [{"role": "user", "content": "usr"}]
-    assert kw["output_config"] == {"effort": "low",
-                                   "format": {"type": "json_schema", "schema": BRIEFING_JSON_SCHEMA}}
+    assert "output_config" not in kw  # 400 on bedrock-runtime (probe 2026-10-22)
+    assert kw["tools"][0]["name"] == "emit" and kw["tools"][0]["input_schema"] is BRIEFING_JSON_SCHEMA
+    assert kw["tool_choice"] == {"type": "tool", "name": "emit"}
 
 
-def test_judge_client_uses_sonnet_medium_effort_and_judge_schema():
+def test_judge_client_uses_haiku_and_judge_schema():
     from macro_pipeline import judge
     j = judge.make_judge()
-    assert j.model == "anthropic.claude-sonnet-5-5"
+    assert j.model == "us.anthropic.claude-haiku-4-5-20251001-v1:0"
     kw = j.request_kwargs("s", "u")
-    assert kw["output_config"]["effort"] == "medium"
-    assert kw["output_config"]["format"]["schema"] is JUDGE_JSON_SCHEMA
+    assert kw["tools"][0]["input_schema"] is JUDGE_JSON_SCHEMA
     assert "temperature" not in kw and "thinking" not in kw
 
 
 def test_persona_judge_failover_keeps_bruce_schema():
     from macro_pipeline import persona_judge
     f = persona_judge.make_bruce_judge_failover()
-    assert f.model == "anthropic.claude-haiku-5-5"
-    assert f.request_kwargs("s", "u")["output_config"]["format"]["schema"] is BRUCE_JSON_SCHEMA
+    assert f.model == "global.anthropic.claude-haiku-4-5-20251001-v1:0"
+    assert f.request_kwargs("s", "u")["tools"][0]["input_schema"] is BRUCE_JSON_SCHEMA
 
 
 def test_default_writer_pair_and_env_overrides(monkeypatch):
     for env in (llm_client.PRIMARY_MODEL_ENV, llm_client.FAILOVER_MODEL_ENV):
         monkeypatch.delenv(env, raising=False)
     p, f = llm_client.make_writer_clients()
-    assert (p.model, f.model) == ("anthropic.claude-haiku-5-5", "anthropic.claude-sonnet-5-5")
+    assert (p.model, f.model) == ("us.anthropic.claude-haiku-4-5-20251001-v1:0",
+                                  "global.anthropic.claude-haiku-4-5-20251001-v1:0")
     monkeypatch.setenv(llm_client.PRIMARY_MODEL_ENV, "anthropic.custom-x")
     assert llm_client.make_writer_clients()[0].model == "anthropic.custom-x"
 
 
-def test_parses_first_text_block_and_records_usage():
+def test_parses_emit_tool_input_and_records_usage():
     observability.reset_run_signals()
     out = _claude(FakeSDK(_resp())).generate("s", "u")
     assert out == NORMAL
@@ -232,7 +234,7 @@ def test_parses_first_text_block_and_records_usage():
     assert len(usage) == 1
     u = usage[0]
     assert (u["model"], u["input_tokens"], u["output_tokens"], u["stop_reason"]) == \
-        ("anthropic.claude-haiku-5-5", 1234, 210, "end_turn")
+        ("us.anthropic.claude-haiku-4-5-20251001-v1:0", 1234, 210, "tool_use")
     assert isinstance(u["latency_ms"], int)
 
 
@@ -244,7 +246,7 @@ def test_refusal_and_max_tokens_raise_so_failover_runs(stop_reason):
         primary.generate("s", "u")
     primary = _claude(FakeSDK(_resp(stop_reason=stop_reason)))
     res = generate_briefing(T1, primary=primary, failover=failover)
-    assert res.model == "anthropic.claude-sonnet-5-5"
+    assert res.model == "global.anthropic.claude-haiku-4-5-20251001-v1:0"
     assert res.output == NORMAL
 
 
@@ -260,12 +262,19 @@ def test_sdk_errors_wrap_into_briefing_llm_error_and_fail_over(exc):
         _claude(FakeSDK(exc)).generate("s", "u")
     res = generate_briefing(T1, primary=_claude(FakeSDK(exc)),
                             failover=_claude(FakeSDK(_resp()), model=llm_client.FAILOVER_MODEL))
-    assert res.model == "anthropic.claude-sonnet-5-5"
+    assert res.model == "global.anthropic.claude-haiku-4-5-20251001-v1:0"
 
 
 def test_non_json_text_is_an_error():
     with pytest.raises(BriefingLLMError, match="non-JSON"):
         _claude(FakeSDK(_resp(text="not json"))).generate("s", "u")
+
+
+def test_missing_emit_tool_call_is_an_error():
+    resp = SimpleNamespace(stop_reason="end_turn", content=[SimpleNamespace(type="text", text="{}")],
+                           usage=SimpleNamespace(input_tokens=1, output_tokens=1))
+    with pytest.raises(BriefingLLMError, match="no emit tool call"):
+        _claude(FakeSDK(resp)).generate("s", "u")
 
 
 def test_missing_region_fails_clearly_without_network(monkeypatch):

@@ -2,7 +2,7 @@
 
 Baseline: the original Economy-Dashboard stack (Gemini 2.5 Flash primary, Groq gpt-oss-120b
 failover), frozen in macro_pipeline.legacy_llm_client. Candidate: Claude on Bedrock (Opus 5.5
-primary, Haiku 5.5 failover). Corpus: the 12 locked regression requests in
+primary, Haiku 5.5 failover; since 2026-10-22 both are Claude Haiku 4.5 profiles, see ADR-007 amendment). Corpus: the 12 locked regression requests in
 tests/fixtures/regression-cases-v1.0.json, the same BriefingRequests the original repo's ship gate
 replays (production rows in logs/runs.jsonl keep only an input hash, so they cannot be replayed).
 

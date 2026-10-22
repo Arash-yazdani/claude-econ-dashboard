@@ -1,4 +1,4 @@
-"""B3 LLM integration — Claude on Amazon Bedrock (Mantle client): Opus 5.5 writer, Haiku 5.5 failover.
+"""B3 LLM integration — Claude on Amazon Bedrock (bedrock-runtime client): Haiku 4.5 writer and judge.
 
 `LLMClient` is the seam the orchestrator depends on, so tests inject a fake and never hit
 the network. `generate_briefing()` assembles the prompt, calls the primary, and on any
@@ -9,13 +9,16 @@ classifier.classify before this module runs; the model narrates it and never pic
 Decision record: docs/adr/ADR-007-claude-on-bedrock-writer.md. The original Gemini/Groq clients
 are frozen in legacy_llm_client.py and used only by scripts/compare_models.py.
 
-Request shape (Claude Opus 5.5 / Sonnet 5.5 / Haiku 5.5):
-- no `temperature` / `top_p`: non-default sampling values return 400 on these models;
-- no `thinking` param: thinking cannot be disabled (`{"type":"disabled"}` and `budget_tokens`
-  both 400); depth is controlled with `output_config.effort` instead;
-- `output_config.format` = json_schema, so the first text block is valid JSON for the schema;
-- `max_tokens` 4096: thinking tokens count against it (the original 512 cap was hit by Gemini
-  thinking — see legacy_llm_client.MAX_OUTPUT_TOKENS).
+Request shape (bedrock-runtime, Claude Haiku 4.5; ADR-007 amendment 2026-10-22):
+- structured output via one forced tool (`tool_choice` = the `emit` tool whose `input_schema` is
+  the schema); the tool_use block's `input` is the result. On bedrock-runtime, `output_config.format`
+  returns 400 "Invalid API version" and `output_config.effort` returns 400 "Extra inputs are not
+  permitted" (probe 2026-10-22), so neither is sent;
+- no `temperature` / `top_p` / `thinking`: kept off so the request also works on the 5.5 models;
+- `max_tokens` 4096.
+Why not Mantle: the account's Mantle endpoint refused every Claude model (docs/incidents/
+2026-10-21-bedrock-claude-not-available-for-account.md); bedrock-runtime serves Haiku 4.5 through
+the cross-region inference profiles below.
 """
 
 from __future__ import annotations
@@ -28,14 +31,15 @@ from typing import Any, Optional, Protocol
 
 from . import observability, prompt
 
-# Bedrock model ids take the `anthropic.` prefix. Env overrides are read at construction time.
-# Writer is Haiku 5.5 (Arash, 2026-10-21: lowest cost for a short constrained paragraph).
-# Failover is a different tier (Sonnet 5.5) so one model-specific outage or refusal cannot take both.
-PRIMARY_MODEL = "anthropic.claude-haiku-5-5"
-FAILOVER_MODEL = "anthropic.claude-sonnet-5-5"
-JUDGE_MODEL = "anthropic.claude-sonnet-5-5"
-# The judge failover must not be the judge model, so it stays on Haiku 5.5.
-JUDGE_FAILOVER_MODEL = "anthropic.claude-haiku-5-5"
+# Cross-region inference profile ids (us. = US regions, global. = any region). Env overrides are
+# read at construction time. Haiku 4.5 is the only Claude model with account quota as of
+# 2026-10-22 (Haiku 5.5 quota 0, increase case open). Failover uses the other routing profile so a
+# regional capacity problem cannot take both; it is the same model, so a model-level refusal still
+# takes both. ponytail: swap FAILOVER/JUDGE to Haiku 5.5 or Sonnet once quota lands (env only).
+PRIMARY_MODEL = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+FAILOVER_MODEL = "global.anthropic.claude-haiku-4-5-20251001-v1:0"
+JUDGE_MODEL = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+JUDGE_FAILOVER_MODEL = "global.anthropic.claude-haiku-4-5-20251001-v1:0"
 PRIMARY_MODEL_ENV = "CLAUDE_PRIMARY_MODEL"
 FAILOVER_MODEL_ENV = "CLAUDE_FAILOVER_MODEL"
 JUDGE_MODEL_ENV = "CLAUDE_JUDGE_MODEL"
@@ -43,9 +47,8 @@ JUDGE_FAILOVER_MODEL_ENV = "CLAUDE_JUDGE_FAILOVER_MODEL"
 REGION_ENV = "AWS_REGION"
 
 WRITER_MAX_TOKENS = 4096
-WRITER_EFFORT = "low"
 JUDGE_MAX_TOKENS = 4096
-JUDGE_EFFORT = "medium"
+EMIT_TOOL = "emit"
 
 # stop_reasons that mean "no usable briefing": raise so generate_briefing runs the failover.
 _FAILOVER_STOP_REASONS = frozenset({"refusal", "max_tokens"})
@@ -102,19 +105,17 @@ def bedrock_region() -> str:
 
 
 class BedrockClaudeClient:
-    """One Claude model on Amazon Bedrock via `anthropic.AnthropicBedrockMantle`.
+    """One Claude model on Amazon Bedrock via `anthropic.AnthropicBedrock` (bedrock-runtime).
 
     The SDK client is built lazily on the first `generate`, so constructing this class needs
     neither AWS credentials nor a region; tests inject `client=` (a fake exposing
     `messages.create`) and never touch the network.
     """
 
-    def __init__(self, model: str = PRIMARY_MODEL, *, effort: str = WRITER_EFFORT,
-                 max_tokens: int = WRITER_MAX_TOKENS, schema: Optional[dict[str, Any]] = None,
+    def __init__(self, model: str = PRIMARY_MODEL, *, max_tokens: int = WRITER_MAX_TOKENS, schema: Optional[dict[str, Any]] = None,
                  client: Any = None, timeout: float = 120.0) -> None:
         self.model = model
         self.name = model  # lands in RunRecord.model / eval_log production_model
-        self.effort = effort
         self.max_tokens = max_tokens
         self.schema = schema or BRIEFING_JSON_SCHEMA
         self.timeout = timeout
@@ -122,8 +123,8 @@ class BedrockClaudeClient:
 
     def _sdk(self) -> Any:
         if self._client is None:
-            from anthropic import AnthropicBedrockMantle  # lazy: import + auth only on a live call
-            self._client = AnthropicBedrockMantle(aws_region=bedrock_region(), timeout=self.timeout)
+            from anthropic import AnthropicBedrock  # lazy: import + auth only on a live call
+            self._client = AnthropicBedrock(aws_region=bedrock_region(), timeout=self.timeout)
         return self._client
 
     def request_kwargs(self, system: str, user: str) -> dict[str, Any]:
@@ -132,10 +133,9 @@ class BedrockClaudeClient:
             "max_tokens": self.max_tokens,
             "system": system,
             "messages": [{"role": "user", "content": user}],
-            "output_config": {
-                "effort": self.effort,
-                "format": {"type": "json_schema", "schema": self.schema},
-            },
+            "tools": [{"name": EMIT_TOOL, "description": "Return the result in this exact shape.",
+                       "input_schema": self.schema}],
+            "tool_choice": {"type": "tool", "name": EMIT_TOOL},
         }
 
     def generate(self, system: str, user: str) -> dict[str, Any]:
@@ -163,20 +163,22 @@ class BedrockClaudeClient:
 
         if resp.stop_reason in _FAILOVER_STOP_REASONS:
             raise BriefingLLMError(f"{self.model} stop_reason={resp.stop_reason}")
-        text = next((b.text for b in resp.content if getattr(b, "type", None) == "text"), None)
-        if text is None:
-            raise BriefingLLMError(f"{self.model} returned no text block")
-        try:
-            obj = json.loads(text)
-        except ValueError as exc:
-            raise BriefingLLMError(f"{self.model} returned non-JSON: {text[:160]!r}") from exc
+        obj = next((b.input for b in resp.content
+                    if getattr(b, "type", None) == "tool_use" and getattr(b, "name", None) == EMIT_TOOL), None)
+        if obj is None:
+            raise BriefingLLMError(f"{self.model} returned no {EMIT_TOOL} tool call")
+        if isinstance(obj, str):  # defensive: some transports hand back the input as a JSON string
+            try:
+                obj = json.loads(obj)
+            except ValueError as exc:
+                raise BriefingLLMError(f"{self.model} returned non-JSON: {obj[:160]!r}") from exc
         if not isinstance(obj, dict):
-            raise BriefingLLMError(f"{self.model} returned a non-object: {text[:160]!r}")
+            raise BriefingLLMError(f"{self.model} returned a non-object: {str(obj)[:160]!r}")
         return obj
 
 
 def make_writer_clients() -> tuple[BedrockClaudeClient, BedrockClaudeClient]:
-    """Production writer pair: (primary Haiku 5.5, failover Sonnet 5.5), env-overridable."""
+    """Production writer pair: (Haiku 4.5 us. profile, Haiku 4.5 global. profile), env-overridable."""
     return (
         BedrockClaudeClient(os.environ.get(PRIMARY_MODEL_ENV) or PRIMARY_MODEL),
         BedrockClaudeClient(os.environ.get(FAILOVER_MODEL_ENV) or FAILOVER_MODEL),
@@ -184,10 +186,10 @@ def make_writer_clients() -> tuple[BedrockClaudeClient, BedrockClaudeClient]:
 
 
 def make_judge_client(schema: dict[str, Any], *, failover: bool = False) -> BedrockClaudeClient:
-    """A judge on Claude (Sonnet 5.5 by default; Haiku 5.5 when `failover`), effort medium."""
+    """A judge on Claude Haiku 4.5 (us. profile; global. when `failover`)."""
     model = (os.environ.get(JUDGE_FAILOVER_MODEL_ENV) or JUDGE_FAILOVER_MODEL) if failover else \
         (os.environ.get(JUDGE_MODEL_ENV) or JUDGE_MODEL)
-    return BedrockClaudeClient(model, effort=JUDGE_EFFORT, max_tokens=JUDGE_MAX_TOKENS, schema=schema)
+    return BedrockClaudeClient(model, max_tokens=JUDGE_MAX_TOKENS, schema=schema)
 
 
 def generate_briefing(

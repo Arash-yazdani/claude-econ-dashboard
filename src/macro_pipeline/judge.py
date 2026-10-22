@@ -1,6 +1,6 @@
 """B7 — Layer-2 LLM-judge harness (docs/prompts/llm-judge-prompt-v1.0.md).
 
-A separate Claude Sonnet 5.5 call (Bedrock, effort medium, JudgeVerdict schema) scores each briefing the
+A separate Claude Haiku 4.5 call (Bedrock, forced-tool JudgeVerdict schema) scores each briefing the
 production model produced on the four *subjective* criteria C1/C3/C4/C5 (1–5). It does NOT
 score C2 (number grounding) or C6 (refusal) — the B4 validator owns those (O5, O16/O17).
 Wired to the 12 regression cases; rolls up to the q26 ship gate and logs every verdict to
@@ -100,7 +100,7 @@ class JudgeModel(Protocol):
 
 
 def make_judge() -> BedrockClaudeClient:
-    """The production judge: Claude Sonnet 5.5 on Bedrock, effort medium, JudgeVerdict schema.
+    """The production judge: Claude Haiku 4.5 on Bedrock (us. profile), JudgeVerdict schema.
 
     The original ran gemini-2.5-flash at temp 0.0. Sampling params are removed on the 5.5 models
     (non-default values 400), so consistency now rests on the schema and rubric, not temperature.
@@ -109,7 +109,7 @@ def make_judge() -> BedrockClaudeClient:
 
 
 def make_judge_failover() -> BedrockClaudeClient:
-    """Judge failover: Claude Haiku 5.5 with the same schema (replaces the Groq judge failover)."""
+    """Judge failover: Claude Haiku 4.5 via the global. profile, same schema (replaces the Groq judge failover)."""
     return make_judge_client(JUDGE_JSON_SCHEMA, failover=True)
 
 

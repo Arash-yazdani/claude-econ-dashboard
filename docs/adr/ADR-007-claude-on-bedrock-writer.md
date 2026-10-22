@@ -129,3 +129,31 @@ Arash chose Claude Haiku 5.5 as the writer. Recomputed with the same token appro
 | Total | | about $2.25 |
 
 The judges are now about 97% of spend. Turning off the daily eval and the weekly gate cuts the total to about $0.04 a month, at the cost of the quality signal.
+
+## Amendment 2026-10-22: Haiku 4.5 on bedrock-runtime
+
+**Decision.** Writer, failover, judge and judge failover all run Claude Haiku 4.5 on the
+bedrock-runtime endpoint (`anthropic.AnthropicBedrock`) through cross-region inference profiles:
+`us.anthropic.claude-haiku-4-5-20251001-v1:0` (primary) and `global.anthropic.claude-haiku-4-5-20251001-v1:0`
+(failover). Structured output is a single forced tool (`emit`) whose `input_schema` is the schema.
+
+**Why.**
+- The Mantle endpoint refused every Claude model for this account (incident 2026-10-21).
+- Account quota on 2026-10-22: Haiku 5.5 = 0 tokens/min (increase requested, AWS case open);
+  Haiku 4.5 = 5M tokens/min on geo and global cross-region.
+- Access also needed a card on file (Marketplace returned INVALID_PAYMENT_INSTRUMENT on direct
+  debit), `aws-marketplace:ViewSubscriptions`/`Subscribe` on the IAM user, and a one-time root
+  call that created the Marketplace subscription "Claude Haiku 4.5 (Amazon Bedrock Edition)".
+- On bedrock-runtime, `output_config.format` returns 400 "Invalid API version" and
+  `output_config.effort` returns 400 "Extra inputs are not permitted"; forced tool use works.
+
+**Consequences.**
+- The failover is the same model on a different routing profile: it covers regional capacity
+  failures, not a model-level refusal. Judge and writer are the same model, so the judge grades
+  its own model family; treat judge scores as weaker evidence until the judge moves to a different
+  model.
+- Cost rises from the Haiku 5.5 estimate (about $2.25/month) to roughly $2 to $5/month at Haiku 4.5
+  per-token prices (estimate, not measured).
+- Back to 5.5: once quota lands, set `CLAUDE_PRIMARY_MODEL` / `CLAUDE_JUDGE_MODEL` to the
+  `us.anthropic.claude-haiku-5-5` / `us.anthropic.claude-sonnet-5-5` profiles and widen the IAM
+  resource list. No code change.

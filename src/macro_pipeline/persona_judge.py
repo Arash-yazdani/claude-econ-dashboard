@@ -327,7 +327,7 @@ class JudgeModel(Protocol):
 
 
 def make_bruce_judge() -> BedrockClaudeClient:
-    """The persona judge: Claude Sonnet 5.5 on Bedrock, effort medium, BruceVerdict schema.
+    """The persona judge: Claude Haiku 4.5 on Bedrock (us. profile), BruceVerdict schema.
 
     Same model family and determinism discipline as the craft judge — a persona that scores the
     same briefing differently run-to-run is a persona to re-prompt (PRD 401).
