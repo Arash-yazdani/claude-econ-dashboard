@@ -21,7 +21,7 @@ compatibility_date = "2024-11-01"
 # would de-dupe against it. Reason for the move: FRED ingests the 08:30 ET BLS releases ~10:10 ET.
 # DISABLED in claude-econ-dashboard until secrets are wired (README). Restore to enable:
 [triggers]
-crons = ["45 14 * * *", "45 15 * * *", "30 21 * * *", "30 22 * * *"]
+crons = ["45 14 * * *"]  # ponytail: free plan allows 5 crons per account and the original macro Worker holds 4; PM and EST runs come from the GitHub schedule fallback
 
 [vars]
 GITHUB_OWNER = "Arash-yazdani"
