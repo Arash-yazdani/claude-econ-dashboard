@@ -161,6 +161,20 @@ alerting layers were built out. The decisions are in `docs/adr/`; the failures a
 
 ---
 
+## Results (measured)
+
+| Measure | Original (Gemini 2.5 Flash / Groq) | Claude Haiku 4.5 on Bedrock |
+|---|---|---|
+| Side-by-side gate, 12 locked cases, 2026-10-23 ([docs/comparison.md](docs/comparison.md)) | PASS: 11/12 validator-valid, 0 judge scores below 3 | FAIL: 10/12 valid, 1 score below 3 |
+| Weekly regression on Claude alone, 2026-10-22 | n/a | PASS: 12/12 measured, 0 below 3 |
+| Live briefings since 2026-10-22 | n/a | 3 runs: 2 published Claude text, 1 fallback card (root-caused to release detection, fixed in 781ac0f) |
+
+Claude's two misses on 2026-10-23 were T4 (validator rejected the output) and T3 (tone scored 2). Both cases
+passed on Claude the day before, so the gap is within run-to-run variance at n=12; it is not evidence that
+either stack is better. The judge is Haiku 4.5 for both stacks, the same model as the Claude writer, so
+judge scores favor Claude if anything; the validator results are deterministic. Measured Claude usage for
+the comparison: 36 calls, 110,567 input and 10,879 output tokens. Bedrock cost is not yet measured.
+
 ## Current status
 
 **Live and publishing twice daily.** The only status numbers worth trusting are the generated ones,
