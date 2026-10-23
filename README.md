@@ -7,12 +7,16 @@ replays the same requests through both stacks and scores them with the same vali
 
 Decision record: [docs/adr/ADR-007-claude-on-bedrock-writer.md](docs/adr/ADR-007-claude-on-bedrock-writer.md).
 
-| Role | Model (Bedrock id) | Env override | Effort |
-|------|--------------------|--------------|--------|
-| Briefing writer (primary) | `anthropic.claude-haiku-5-5` | `CLAUDE_PRIMARY_MODEL` | low |
-| Writer failover | `anthropic.claude-sonnet-5-5` | `CLAUDE_FAILOVER_MODEL` | low |
-| Judge failover | `anthropic.claude-haiku-5-5` | `CLAUDE_JUDGE_FAILOVER_MODEL` | medium |
-| Craft judge, persona judge | `anthropic.claude-sonnet-5-5` | `CLAUDE_JUDGE_MODEL` | medium |
+| Role | Model (Bedrock inference profile) | Env override |
+|------|------------------------------------|--------------|
+| Briefing writer (primary) | `us.anthropic.claude-haiku-4-5-20251001-v1:0` | `CLAUDE_PRIMARY_MODEL` |
+| Writer failover | `global.anthropic.claude-haiku-4-5-20251001-v1:0` | `CLAUDE_FAILOVER_MODEL` |
+| Craft judge, persona judge | `us.anthropic.claude-haiku-4-5-20251001-v1:0` | `CLAUDE_JUDGE_MODEL` |
+| Judge failover | `global.anthropic.claude-haiku-4-5-20251001-v1:0` | `CLAUDE_JUDGE_FAILOVER_MODEL` |
+
+The design called for Haiku 5.5 / Sonnet 5.5; the AWS account could not invoke them, so all roles run
+Haiku 4.5 on `bedrock-runtime` (ADR-007, amendment 2026-10-22). Writer and judge share a model, so the
+judge's same-model bias is a stated limitation; the deterministic validator is the primary gate.
 
 Unchanged and deterministic: FRED ingest, the rules-only regime classifier (the model does not pick
 the regime), the prompt (v1.5), the B4 validator and its fallback card, the audit log.
