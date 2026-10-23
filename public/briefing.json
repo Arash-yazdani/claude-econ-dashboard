@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "state": "default",
-  "generated_at": "2026-10-22T17:34:24-04:00",
+  "state": "fallback",
+  "generated_at": "2026-10-23T10:45:51-04:00",
   "run_label": "AM",
-  "data_through": "2026-10-22",
+  "data_through": "2026-10-23",
   "regime": "soft_landing",
   "regime_label": "Soft landing",
   "drivers": [
@@ -31,20 +31,6 @@
       5.0
     ]
   ],
-  "briefing": {
-    "headline": "Soft landing holds as moderating inflation and steady jobs keep growth on track.",
-    "quotable_numbers": [
-      {
-        "indicator_id": "core_cpi_yoy",
-        "sentence": "Core CPI at 2.6 percent for Sep 2026 hovers near the Fed's target, freeing rate pressure."
-      },
-      {
-        "indicator_id": "unemployment",
-        "sentence": "Unemployment at 4.2 percent for Sep 2026 holds firm, sustaining household spending."
-      }
-    ],
-    "whats_new": "Today: 10-Year Treasury lower, from 5.09 percent to 4.96 percent.",
-    "regime_change": null
-  },
-  "fallback_text": null
+  "briefing": null,
+  "fallback_text": "Regime: Soft landing. CPI: 3.7%. Unemployment: 4.2%."
 }
