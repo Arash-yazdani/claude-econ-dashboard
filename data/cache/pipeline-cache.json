@@ -47,7 +47,7 @@
       "last_release_date": "2026-10-23",
       "observation_date": "2026-10-23",
       "period_label": "2026-10-23",
-      "value": 3998.600098
+      "value": 3998.300049
     },
     "housing_starts": {
       "last_release_date": "2026-10-20",
@@ -134,10 +134,10 @@
       "value": 4.65
     },
     "umich_sentiment": {
-      "last_release_date": "2026-09-25",
-      "observation_date": "2026-08-01",
-      "period_label": "Aug 2026",
-      "value": 51.7
+      "last_release_date": "2026-10-23",
+      "observation_date": "2026-09-01",
+      "period_label": "Sep 2026",
+      "value": 48.1
     },
     "unemployment": {
       "last_release_date": "2026-10-02",

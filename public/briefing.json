@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "state": "fallback",
-  "generated_at": "2026-10-23T10:45:51-04:00",
-  "run_label": "AM",
+  "state": "default",
+  "generated_at": "2026-10-23T14:44:19-04:00",
+  "run_label": "PM",
   "data_through": "2026-10-23",
   "regime": "soft_landing",
   "regime_label": "Soft landing",
@@ -31,6 +31,20 @@
       5.0
     ]
   ],
-  "briefing": null,
-  "fallback_text": "Regime: Soft landing. CPI: 3.7%. Unemployment: 4.2%."
+  "briefing": {
+    "headline": "The soft landing holds as inflation edges higher but remains near target, kept steady by resilient employment.",
+    "quotable_numbers": [
+      {
+        "indicator_id": "core_cpi_yoy",
+        "sentence": "Core CPI at 2.6 percent for Sep 2026 sits near the Fed's target, letting rates rest."
+      },
+      {
+        "indicator_id": "unemployment",
+        "sentence": "Unemployment at 4.2 percent for Sep 2026 provides the income cushion households need to absorb those prices."
+      }
+    ],
+    "whats_new": "Today: U-Mich Sentiment softer, from 51.7 to 48.1.",
+    "regime_change": null
+  },
+  "fallback_text": null
 }
