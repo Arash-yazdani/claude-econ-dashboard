@@ -62,3 +62,24 @@ def test_detect_releases_no_release_when_period_unchanged():
     )
     cache = Cache({"snapshot": {"cpi_yoy": {"value": 2.9, "observation_date": "2026-05-01"}}})
     assert detect_releases([reading], cache) == []
+
+
+def test_detect_releases_skips_unchanged_daily_print():
+    # 2026-10-23 incident: DFF reprinted 3.88 -> 3.88, forced whats_new, run fell back.
+    reading = IndicatorReading(
+        id="fed_funds", display_name="Fed funds", value=3.88, unit="%",
+        period_label="2026-10-22", last_release_date="2026-10-23",
+        observation_date="2026-10-22",
+    )
+    cache = Cache({"snapshot": {"fed_funds": {"value": 3.88, "observation_date": "2026-10-21"}}})
+    assert detect_releases([reading], cache) == []
+
+
+def test_detect_releases_keeps_unchanged_monthly_print():
+    reading = IndicatorReading(
+        id="unemployment", display_name="Unemployment", value=4.2, unit="%",
+        period_label="Sep 2026", last_release_date="2026-10-03",
+        observation_date="2026-09-01",
+    )
+    cache = Cache({"snapshot": {"unemployment": {"value": 4.2, "observation_date": "2026-08-01"}}})
+    assert len(detect_releases([reading], cache)) == 1

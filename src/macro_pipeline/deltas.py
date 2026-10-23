@@ -16,7 +16,14 @@ from typing import Optional
 
 from ._dates import parse_iso
 from .cache import Cache
+from .config import INDICATORS, Frequency
 from .models import IndicatorReading, Observation, Release
+
+# Daily series (e.g. DFF fed funds) print every business day. A daily print that repeats the
+# cached value is not news: on 2026-10-23 an unchanged fed_funds 3.88 -> 3.88 "release" forced
+# O4 (whats_new required), Haiku correctly saw nothing new, both attempts were rejected and the
+# AM run published the fallback card. Monthly/quarterly prints still count when unchanged.
+_DAILY = {s.id for s in INDICATORS if s.frequency == Frequency.DAILY}
 
 _THREE_MONTHS_DAYS = 91
 
@@ -56,6 +63,8 @@ def detect_releases(readings: list[IndicatorReading], cache: Cache) -> list[Rele
             continue
         prev_obs_date = prev.get("observation_date")
         if prev_obs_date and r.observation_date and r.observation_date > prev_obs_date:
+            if r.id in _DAILY and r.value == prev.get("value"):
+                continue
             releases.append(
                 Release(id=r.id, prior_value=prev.get("value"), new_value=r.value)
             )
