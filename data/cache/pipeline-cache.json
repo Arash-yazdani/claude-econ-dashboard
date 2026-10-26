@@ -47,7 +47,7 @@
       "last_release_date": "2026-10-26",
       "observation_date": "2026-10-26",
       "period_label": "2026-10-26",
-      "value": 4019.399902
+      "value": 4013.600098
     },
     "housing_starts": {
       "last_release_date": "2026-10-20",
@@ -110,28 +110,28 @@
       "value": 2.19157
     },
     "sp500": {
-      "last_release_date": "2026-10-21",
-      "observation_date": "2026-10-21",
-      "period_label": "2026-10-21",
-      "value": 7757.17
-    },
-    "tips_10y_real": {
-      "last_release_date": "2026-10-23",
+      "last_release_date": "2026-10-26",
       "observation_date": "2026-10-23",
       "period_label": "2026-10-23",
+      "value": 7623.68
+    },
+    "tips_10y_real": {
+      "last_release_date": "2026-10-26",
+      "observation_date": "2026-10-26",
+      "period_label": "2026-10-26",
       "value": 2.66
     },
     "treasury_10y": {
-      "last_release_date": "2026-10-23",
-      "observation_date": "2026-10-23",
-      "period_label": "2026-10-23",
+      "last_release_date": "2026-10-26",
+      "observation_date": "2026-10-26",
+      "period_label": "2026-10-26",
       "value": 5.0
     },
     "treasury_2y": {
-      "last_release_date": "2026-10-23",
-      "observation_date": "2026-10-23",
-      "period_label": "2026-10-23",
-      "value": 4.69
+      "last_release_date": "2026-10-26",
+      "observation_date": "2026-10-26",
+      "period_label": "2026-10-26",
+      "value": 4.68
     },
     "umich_sentiment": {
       "last_release_date": "2026-10-23",
