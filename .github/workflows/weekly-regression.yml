@@ -45,7 +45,7 @@ concurrency:
 
 jobs:
   regression:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # pinned: ubuntu-latest moves to 26 from 2026-10-19
     steps:
       # PRODUCTION EATS FIRST. The gate and the briefing share the same free-tier quota, and on
       # 2026-08-07 a strict run fired at 21:28 UTC — two minutes before the PM window — drained

@@ -13,6 +13,7 @@ config.INDICATORS when the registry changes rather than trusting this comment.)
 from __future__ import annotations
 
 import os
+import time
 from dataclasses import dataclass
 from typing import Any, Optional, Protocol
 
@@ -50,6 +51,9 @@ def _parse_value(raw: Any) -> Optional[float]:
 class FredClient:
     """Real FRED HTTP client."""
 
+    RETRY_DELAYS: tuple[float, ...] = (10.0, 30.0, 60.0)
+    _sleep = staticmethod(time.sleep)
+
     def __init__(
         self,
         api_key: Optional[str] = None,
@@ -69,10 +73,18 @@ class FredClient:
 
     def _get(self, path: str, params: dict[str, Any]) -> dict[str, Any]:
         params = {**params, "api_key": self.api_key, "file_type": "json"}
-        try:
-            resp = self.session.get(f"{self.base_url}/{path}", params=params, timeout=self.timeout)
-        except requests.RequestException as exc:  # network/DNS/timeout
-            raise FredError(f"FRED request failed for {path}: {exc}") from exc
+        # Retry 429 and 5xx. FRED rate-limited this key (shared with the original macro repo) on
+        # 2026-10-24 and 10-25 and each PM run died on the first 429; FRED 5xx killed 3 runs in
+        # Jul-Aug. ponytail: fixed backoff, honor Retry-After if FRED ever sends one.
+        for delay in (*self.RETRY_DELAYS, None):
+            try:
+                resp = self.session.get(f"{self.base_url}/{path}", params=params, timeout=self.timeout)
+            except requests.RequestException as exc:  # network/DNS/timeout
+                raise FredError(f"FRED request failed for {path}: {exc}") from exc
+            if delay is None or not (resp.status_code == 429 or resp.status_code >= 500):
+                break
+            ra = resp.headers.get("Retry-After", "")
+            self._sleep(float(ra) if ra.isdigit() else delay)
         if resp.status_code != 200:
             raise FredError(f"FRED {path} returned HTTP {resp.status_code}: {resp.text[:200]}")
         try:
