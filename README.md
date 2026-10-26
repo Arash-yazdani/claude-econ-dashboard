@@ -161,6 +161,10 @@ alerting layers were built out. The decisions are in `docs/adr/`; the failures a
 
 ---
 
+## AWS access
+
+GitHub Actions authenticates to AWS through OIDC: role `claude-econ-github` trusts only this repo's `main` branch (GitHub's immutable subject format, `repo:Arash-yazdani@237110158/claude-econ-dashboard@1428949028:ref:refs/heads/main`), and `aws-actions/configure-aws-credentials` issues 1-hour credentials per run. The role's only policy allows `bedrock:InvokeModel` on Claude Haiku 4.5 profiles, `bedrock:ListInferenceProfiles`, and the Marketplace subscription check. No long-lived AWS key is stored in GitHub (the original IAM user key was deactivated 2026-10-26).
+
 ## Results (measured)
 
 | Measure | Original (Gemini 2.5 Flash / Groq) | Claude Haiku 4.5 on Bedrock |
