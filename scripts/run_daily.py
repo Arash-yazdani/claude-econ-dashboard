@@ -93,7 +93,7 @@ def _run(args: argparse.Namespace, run_label: str, now_et: datetime) -> int:
     # resolved by the SDK on first call; a bad credential surfaces as a failover, then the template.
     try:
         bedrock_region()
-        primary, failover = make_writer_clients()
+        primary, failover = make_writer_clients(cross_provider=True)
     except BriefingLLMError as exc:
         print(f"(no Claude writer: {exc})", file=sys.stderr)
         primary = failover = None

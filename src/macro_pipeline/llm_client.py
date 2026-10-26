@@ -177,12 +177,37 @@ class BedrockClaudeClient:
         return obj
 
 
-def make_writer_clients() -> tuple[BedrockClaudeClient, BedrockClaudeClient]:
-    """Production writer pair: (Haiku 4.5 us. profile, Haiku 4.5 global. profile), env-overridable."""
-    return (
-        BedrockClaudeClient(os.environ.get(PRIMARY_MODEL_ENV) or PRIMARY_MODEL),
-        BedrockClaudeClient(os.environ.get(FAILOVER_MODEL_ENV) or FAILOVER_MODEL),
-    )
+class ChainClient:
+    """Try each client in order; `name` reports the one that answered. Used for the production
+    failover so a Claude-wide failure (account block, model refusal) still has a different
+    provider behind it. The us./global. pair alone only covers a regional outage."""
+
+    def __init__(self, *clients: LLMClient) -> None:
+        self.clients = clients
+        self.name = clients[0].name
+
+    def generate(self, system: str, user: str) -> dict[str, Any]:
+        errors = []
+        for c in self.clients:
+            try:
+                out = c.generate(system, user)
+                self.name = c.name
+                return out
+            except Exception as exc:  # next provider
+                errors.append(f"{c.name}: {exc}")
+        raise BriefingLLMError("; ".join(errors))
+
+
+def make_writer_clients(*, cross_provider: bool = False) -> tuple[LLMClient, LLMClient]:
+    """Production writer pair: (Haiku 4.5 us. profile, Haiku 4.5 global. profile), env-overridable.
+    cross_provider=True (run_daily only) appends the original Gemini client to the failover when
+    GEMINI_API_KEY is set. Eval scripts keep Claude-only so their measurements stay clean."""
+    primary = BedrockClaudeClient(os.environ.get(PRIMARY_MODEL_ENV) or PRIMARY_MODEL)
+    failover: LLMClient = BedrockClaudeClient(os.environ.get(FAILOVER_MODEL_ENV) or FAILOVER_MODEL)
+    if cross_provider and os.environ.get("GEMINI_API_KEY"):
+        from .legacy_llm_client import GeminiClient
+        failover = ChainClient(failover, GeminiClient())
+    return primary, failover
 
 
 def make_judge_client(schema: dict[str, Any], *, failover: bool = False) -> BedrockClaudeClient:

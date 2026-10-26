@@ -145,6 +145,8 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          # Cross-provider failover: Claude us. -> Claude global. -> Gemini (run_daily only).
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GOLD_API_KEY: ${{ secrets.GOLD_API_KEY }}
           BLS_API_KEY: ${{ secrets.BLS_API_KEY }}
           EIA_API_KEY: ${{ secrets.EIA_API_KEY }}

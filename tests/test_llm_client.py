@@ -282,3 +282,32 @@ def test_missing_region_fails_clearly_without_network(monkeypatch):
     client = BedrockClaudeClient()  # constructing needs no AWS config (lazy)
     with pytest.raises(BriefingLLMError, match="AWS_REGION is not set"):
         client.generate("s", "u")
+
+
+def test_chain_client_falls_through_to_next_provider():
+    class Bad:
+        name = "claude-global"
+        def generate(self, s, u): raise RuntimeError("403")
+    class Good:
+        name = "gemini-2.5-flash"
+        def generate(self, s, u): return {"headline": "ok"}
+    c = llm_client.ChainClient(Bad(), Good())
+    assert c.generate("s", "u") == {"headline": "ok"}
+    assert c.name == "gemini-2.5-flash"
+
+
+def test_chain_client_raises_with_every_error():
+    class Bad:
+        def __init__(self, n): self.name = n
+        def generate(self, s, u): raise RuntimeError("down")
+    c = llm_client.ChainClient(Bad("a"), Bad("b"))
+    with pytest.raises(llm_client.BriefingLLMError, match="a: down; b: down"):
+        c.generate("s", "u")
+
+
+def test_cross_provider_failover_only_with_gemini_key(monkeypatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    assert not isinstance(llm_client.make_writer_clients(cross_provider=True)[1], llm_client.ChainClient)
+    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    assert isinstance(llm_client.make_writer_clients(cross_provider=True)[1], llm_client.ChainClient)
+    assert not isinstance(llm_client.make_writer_clients()[1], llm_client.ChainClient)
