@@ -37,6 +37,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write   # GitHub OIDC -> AWS role
 
 # The daily briefing also commits; never let the two race on eval_log.csv.
 concurrency:
@@ -68,6 +69,14 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      # Short-lived AWS credentials via GitHub OIDC (role claude-econ-github, main branch only).
+      # Replaced the claude-econ-bot access key on 2026-10-26; no long-lived AWS key in GitHub.
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::179897609265:role/claude-econ-github
+          aws-region: ${{ secrets.AWS_REGION }}
+
       - name: Set up Python 3.11
         uses: actions/setup-python@v7
         with:
@@ -84,8 +93,6 @@ jobs:
       - name: Verify the Claude model ids are still served on Bedrock
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           ALERT_SLACK_WEBHOOK: ${{ secrets.ALERT_SLACK_WEBHOOK }}
         run: python scripts/probe_models.py --fail
 
@@ -104,8 +111,6 @@ jobs:
         continue-on-error: true
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HEALTHCHECKS_URL_REGRESSION: ${{ secrets.HEALTHCHECKS_URL_REGRESSION }}
           ALERT_SLACK_WEBHOOK: ${{ secrets.ALERT_SLACK_WEBHOOK }}
           LANGSMITH_TRACING: "true"

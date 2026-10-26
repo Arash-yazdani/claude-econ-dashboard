@@ -58,6 +58,7 @@ on:
 # Least privilege: the job only needs to commit the regenerated data back to the repo.
 permissions:
   contents: write
+  id-token: write   # GitHub OIDC -> AWS role
 
 # Never let two cron firings race to commit the same files.
 concurrency:
@@ -72,6 +73,14 @@ jobs:
         uses: actions/checkout@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Short-lived AWS credentials via GitHub OIDC (role claude-econ-github, main branch only).
+      # Replaced the claude-econ-bot access key on 2026-10-26; no long-lived AWS key in GitHub.
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::179897609265:role/claude-econ-github
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v7
@@ -88,8 +97,6 @@ jobs:
         continue-on-error: true
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           ALERT_SLACK_WEBHOOK: ${{ secrets.ALERT_SLACK_WEBHOOK }}
         run: python scripts/probe_models.py
 
@@ -143,8 +150,6 @@ jobs:
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           # Cross-provider failover: Claude us. -> Claude global. -> Gemini (run_daily only).
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GOLD_API_KEY: ${{ secrets.GOLD_API_KEY }}
@@ -182,8 +187,6 @@ jobs:
         continue-on-error: true
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
           GOLD_API_KEY: ${{ secrets.GOLD_API_KEY }}
           BLS_API_KEY: ${{ secrets.BLS_API_KEY }}
