@@ -119,6 +119,13 @@ def _data_numbers(text: str, day_tokens: frozenset[str] = frozenset()) -> list[t
             pw = _preceding_word(cleaned, m.start())
             if pw in _MONTHS or re.fullmatch(r"q[1-4]", pw):
                 continue  # a real year inside a period ("May 2026" / "Q1 2026")
+            # full date "June 18, 2026": the year follows the day, not the month. Skip it only
+            # when that month-day is a real period in the request. Haiku 4.5 writes this form;
+            # it failed T4 on 2026-10-23 and 2026-10-26 with O5 "[2026.0, 2026.0]".
+            md = re.search(r"([A-Za-z]+)\.?\s+(\d{1,2}),?\s*$", cleaned[:m.start()])
+            if md and md.group(1).lower() in _MONTHS and \
+                    f"{md.group(1).lower()[:3]} {int(md.group(2))}" in day_tokens:
+                continue
             # otherwise NOT a period-year → fall through so a fabricated year gets grounded
         after = cleaned[m.end():m.end() + 6].lower()
         if after.startswith(("-year", "-yr", "yr")) or (

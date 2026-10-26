@@ -317,6 +317,16 @@ def test_wrong_daily_release_date_still_fails():
         assert v.status != "valid", text
 
 
+def test_full_date_with_year_is_accepted_only_for_a_real_day():
+    # Haiku 4.5 writes "Sep 2, 2026"; the year after the day failed O5 on T4 (2026-10-23, 10-26).
+    r = _daily_release_request()
+    for text in ("Brent rose to 96.02 USD on Sep 2, 2026.", "Brent rose to 96.02 USD on September 2 2026."):
+        v = validate(_with_whats_new(text), r)
+        assert v.status == "valid", (text, v.failed)
+    v = validate(_with_whats_new("Brent rose to 96.02 USD on Sep 27, 2026."), r)
+    assert v.status != "valid"
+
+
 def test_fabricated_number_still_fails_alongside_a_true_date():
     r = _daily_release_request()
     v = validate(_with_whats_new("Brent rose to 111.11 USD on Sep 2."), r)
