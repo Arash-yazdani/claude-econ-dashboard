@@ -177,7 +177,7 @@ Claude's two misses on 2026-10-23 were T4 (validator rejected the output) and T3
 passed on Claude the day before, so the gap is within run-to-run variance at n=12; it is not evidence that
 either stack is better. The judge is Haiku 4.5 for both stacks, the same model as the Claude writer, so
 judge scores favor Claude if anything; the validator results are deterministic. Measured Claude usage for
-the comparison: 36 calls, 110,567 input and 10,879 output tokens. Bedrock cost is not yet measured.
+the comparison: 36 calls, 110,567 input and 10,879 output tokens. Measured cost: $0.66 AWS account month-to-date on 2026-10-27, with Claude running since 2026-10-22; an AWS Budget ($5/month, alerts at 85%, 100% and forecast) watches it.
 
 ## Current status
 
