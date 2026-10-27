@@ -47,6 +47,7 @@ def main(argv: list[str] | None = None) -> int:
         res = generate_briefing(req, primary=writer, failover=writer_failover)
         return res.output, res.model
 
+    print(f"judge: {getattr(judge.make_judge(), 'name', '?')} (failover {getattr(judge.make_judge_failover(), 'name', '?')})")
     results = run_regression(cases, briefing_for=briefing_for, judge_model=judge.make_judge(),
                              judge_failover=judge.make_judge_failover(), pace_seconds=args.pace)
     s = summarize(results, strict=args.strict)

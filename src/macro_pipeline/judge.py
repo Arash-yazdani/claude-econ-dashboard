@@ -140,9 +140,12 @@ def score(request: dict[str, Any], output: dict[str, Any], *, model: JudgeModel,
     user = build_judge_user(request, output)
     try:
         verdict = model.generate(JUDGE_SYSTEM, user)
-    except Exception:
+    except Exception as exc:
         if failover is None:
             raise
+        # Loud on purpose: a silent judge failover hid whether Gemini or Claude scored (2026-10-27).
+        print(f"judge primary {getattr(model, 'name', '?')} failed ({str(exc)[:160]}); "
+              f"scored by failover {getattr(failover, 'name', '?')}")
         verdict = failover.generate(JUDGE_SYSTEM, user)
     # Overwrite the model's self-reported flag with the arithmetic. See below_3().
     if isinstance(verdict, dict):
