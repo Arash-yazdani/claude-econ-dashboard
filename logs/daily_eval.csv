@@ -455,3 +455,4 @@ timestamp,as_of_date,run_label,prompt_version,judge_version,production_model,val
 2026-10-25T19:01:23,2026-10-25,PM,1.5,1.0,us.anthropic.claude-haiku-4-5-20251001-v1:0,valid,1.0000,0.6667,1.0000,0.9167,R2b_regime_named,5,4,5,5,False,c3c2adee-f010-47a7-b36e-711b1b2c87d4,1.0,5,5,3,4,0.8500,True,False,,,
 2026-10-26T14:46:46,2026-10-26,AM,1.5,1.0,us.anthropic.claude-haiku-4-5-20251001-v1:0,valid,1.0000,1.0000,1.0000,1.0000,,4,4,5,5,False,b0ccae59-bbfe-4991-a0e1-cc858bed4e92,1.0,5,5,3,4,0.8500,True,False,,,
 2026-10-26T20:11:02,2026-10-26,PM,1.5,1.0,us.anthropic.claude-haiku-4-5-20251001-v1:0,valid,1.0000,1.0000,1.0000,1.0000,,5,4,5,5,False,0614e63a-88fb-4012-a068-26546e5c61b4,1.0,5,5,3,4,0.8500,True,False,,,
+2026-10-27T14:47:00,2026-10-27,AM,1.5,1.0,us.anthropic.claude-haiku-4-5-20251001-v1:0,valid,1.0000,1.0000,1.0000,1.0000,,4,4,5,5,False,73bb90f2-c647-42bb-ad9c-1e594496730b,1.0,5,5,4,4,0.9000,True,False,,,

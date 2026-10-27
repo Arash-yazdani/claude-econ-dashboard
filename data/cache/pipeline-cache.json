@@ -32,22 +32,22 @@
       "value": 3.73768
     },
     "fed_funds": {
-      "last_release_date": "2026-10-23",
-      "observation_date": "2026-10-23",
-      "period_label": "2026-10-23",
-      "value": 3.88
-    },
-    "federal_debt_gdp": {
-      "last_release_date": "2026-10-22",
-      "observation_date": "2026-10-22",
-      "period_label": "Q4 2026",
-      "value": 40444342.7
-    },
-    "gold_spot": {
       "last_release_date": "2026-10-26",
       "observation_date": "2026-10-26",
       "period_label": "2026-10-26",
-      "value": 4013.600098
+      "value": 3.88
+    },
+    "federal_debt_gdp": {
+      "last_release_date": "2026-10-23",
+      "observation_date": "2026-10-23",
+      "period_label": "Q4 2026",
+      "value": 40463151.9
+    },
+    "gold_spot": {
+      "last_release_date": "2026-10-27",
+      "observation_date": "2026-10-27",
+      "period_label": "2026-10-27",
+      "value": 4049.0
     },
     "housing_starts": {
       "last_release_date": "2026-10-20",
@@ -92,10 +92,10 @@
       "value": 7.32
     },
     "nasdaq": {
-      "last_release_date": "2026-10-23",
-      "observation_date": "2026-10-23",
-      "period_label": "2026-10-23",
-      "value": 25955.34
+      "last_release_date": "2026-10-26",
+      "observation_date": "2026-10-26",
+      "period_label": "2026-10-26",
+      "value": 26169.38
     },
     "payrolls": {
       "last_release_date": "2026-10-02",
@@ -146,16 +146,16 @@
       "value": 4.2
     },
     "usd_index": {
-      "last_release_date": "2026-10-19",
-      "observation_date": "2026-10-16",
-      "period_label": "2026-10-16",
-      "value": 121.4048
-    },
-    "vix": {
       "last_release_date": "2026-10-26",
       "observation_date": "2026-10-23",
       "period_label": "2026-10-23",
-      "value": 19.45
+      "value": 121.3202
+    },
+    "vix": {
+      "last_release_date": "2026-10-27",
+      "observation_date": "2026-10-26",
+      "period_label": "2026-10-26",
+      "value": 18.39
     }
   }
 }
