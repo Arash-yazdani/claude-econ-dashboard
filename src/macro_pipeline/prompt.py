@@ -17,7 +17,9 @@ from typing import Any
 from .config import INDICATORS
 
 # Bump on any prose change; the regression set re-runs on every prompt change (PRD q26).
-PROMPT_VERSION = "1.5"    # 1.5: Bruce D+1 style — causal narrative, examples rewritten to break
+PROMPT_VERSION = "1.5.1"  # 1.5.1: word budget when regime_change or whats_new fires (Haiku 4.5
+# wrote 86 words on T4, 2026-10-27; the cap was stated but not budgeted).
+# 1.5: Bruce D+1 style — causal narrative, examples rewritten to break
 # the 99/109 few-shot echo, Fed-target kept qualitative, scope guard on non-US conditions.
 # 1.4.2: metadata-only context-id swap (wti_oil→brent_oil), CEO-approved
 # via Charter Rev 3; prose unchanged.
@@ -104,7 +106,9 @@ GLOBAL CONSTRAINTS:
   uncertainty", no "overseas weakness". The data set is domestic.
 - Every PERIOD in your output must appear in some period_label or last_release_date.
 - Never produce a number for an indicator absent from <indicator_metadata>.
-- Never recommend an action. Stay descriptive. Total output <=80 words.
+- Never recommend an action. Stay descriptive. Total output <=80 words. Count before you answer:
+  when regime_change or whats_new is non-null, keep the headline and both quotable sentences to
+  <=55 words together so the total stays <=80.
 - No markdown, no emoji, no exclamation points, no semicolons.
 </output_rules>
 <refusal_and_escalation>
