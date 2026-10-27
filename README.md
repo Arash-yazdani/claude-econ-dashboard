@@ -167,17 +167,20 @@ GitHub Actions authenticates to AWS through OIDC: role `claude-econ-github` trus
 
 ## Results (measured)
 
-| Measure | Original (Gemini 2.5 Flash / Groq) | Claude Haiku 4.5 on Bedrock |
-|---|---|---|
-| Side-by-side gate, 12 locked cases, 2026-10-23 ([docs/comparison.md](docs/comparison.md)) | PASS: 11/12 validator-valid, 0 judge scores below 3 | FAIL: 10/12 valid, 1 score below 3 |
-| Weekly regression on Claude alone, 2026-10-22 | n/a | PASS: 12/12 measured, 0 below 3 |
-| Live briefings since 2026-10-22 | n/a | 3 runs: 2 published Claude text, 1 fallback card (root-caused to release detection, fixed in 781ac0f) |
+Side-by-side runs, 12 locked cases each, prompt v1.5, Haiku 4.5 judge for both stacks ([docs/comparison.md](docs/comparison.md) holds the latest; git history holds each run):
 
-Claude's two misses on 2026-10-23 were T4 (validator rejected the output) and T3 (tone scored 2). Both cases
-passed on Claude the day before, so the gap is within run-to-run variance at n=12; it is not evidence that
-either stack is better. The judge is Haiku 4.5 for both stacks, the same model as the Claude writer, so
-judge scores favor Claude if anything; the validator results are deterministic. Measured Claude usage for
-the comparison: 36 calls, 110,567 input and 10,879 output tokens. Measured cost: $0.66 AWS account month-to-date on 2026-10-27, with Claude running since 2026-10-22; an AWS Budget ($5/month, alerts at 85%, 100% and forecast) watches it.
+| Run | Original (Gemini 2.5 Flash / Groq) | Claude Haiku 4.5 on Bedrock |
+|---|---|---|
+| 2026-10-23 | PASS, 11/12 valid, 0 below 3 | FAIL, 10/12 valid, 1 below 3 |
+| 2026-10-27 #1 | FAIL, 11/12 valid | PASS, 11/12 valid, 0 below 3 |
+| 2026-10-27 #2 | PASS, 11/12 valid, 0 below 3 | PASS, 11/12 valid, 0 below 3 |
+| **Total** | 33/36 valid, 2 of 3 gates passed | 32/36 valid, 2 of 3 gates passed |
+
+The stacks are comparable within run-to-run variance. Claude's misses traced to two pipeline issues, both fixed: the validator graded the year in "June 18, 2026" as a data value (fixed 2026-10-26), and the prompt stated the 80-word cap without budgeting for the regime-change sentence (prompt v1.5.1, 2026-10-27). Prompt v1.5.1 passed the strict gate (0 below 3, 12/12 validator-valid) on 2026-10-27.
+
+Live: Claude has published every scheduled briefing since 2026-10-22 except one fallback card (2026-10-23 AM, a release-detection bug, fixed). Measured cost: $0.66 AWS account month-to-date on 2026-10-27; an AWS Budget ($5/month, alerts at 85%, 100% and forecast) watches it.
+
+Judges: the daily and weekly judges are configured to run on Gemini 2.5 Flash so the judge is not the writer's model family, with Claude as the failover judge. On 2026-10-27 Gemini's free-tier quota was exhausted by the comparison runs and Claude scored every case; whether Gemini holds as the judge on a normal day is not yet verified.
 
 ## Current status
 
