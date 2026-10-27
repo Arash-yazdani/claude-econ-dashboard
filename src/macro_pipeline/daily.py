@@ -42,7 +42,7 @@ def resolve_run_label(et_now) -> Optional[str]:
     A WIDE window, NOT an exact time. GitHub Actions cron is best-effort and routinely fires
     1–2h late (and the EDT/EST cron pair land an hour apart), so an exact-time guard would skip
     almost every real firing once GitHub's delay pushed it past the minute. Instead: AM session =
-    ET 10:30 → 13:59, PM session = 14:00 → 22:59, overnight/pre-open -> None. The EDT/EST pair and
+    ET 10:30 → 13:59, PM session = 16:30 → 22:59, 14:00-16:29 and overnight/pre-open -> None. The EDT/EST pair and
     any delayed/buffer firing resolve to the same session; run_daily.py de-dupes so exactly one run
     publishes per ET day per session.
 
@@ -60,7 +60,10 @@ def resolve_run_label(et_now) -> Optional[str]:
     m = et_now.hour * 60 + et_now.minute
     if 10 * 60 + 30 <= m < 14 * 60:  # 10:30 (after FRED's ~10:10 release ingest) .. 13:59 -> AM
         return "AM"
-    if 14 * 60 <= m < 23 * 60:        # 14:00 .. 22:59 -> PM
+    # PM floor 16:30, raised from 14:00 on 2026-10-27: GitHub delayed the 12:15 AM-buffer cron
+    # to ~14:40-15:40 ET most days, it resolved to PM, and the "evening" card published hours
+    # before the 17:30 target on mostly AM data. A firing between 14:00 and 16:29 now skips.
+    if 16 * 60 + 30 <= m < 23 * 60:   # 16:30 .. 22:59 -> PM
         return "PM"
     return None
 

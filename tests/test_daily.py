@@ -101,9 +101,11 @@ def _reading(id_, value, obs_date, period_label):
     # 2026-08-12: a 09:45 run read June CPI on July CPI's release morning. 10:15 must skip too,
     # it sits inside FRED's ingest gap and would claim the session with pre-release data.
     (8, 45, None), (9, 0, None), (9, 30, None), (9, 45, None), (10, 15, None), (10, 29, None),
-    # PM session = ET 14:00–22:59 (tolerates a late firing of the 17:30 cron — incl. the
+    # gap 14:00-16:29 -> skip: a delayed AM-buffer firing must not claim the PM session (2026-10-27)
+    (14, 0, None), (15, 39, None), (16, 29, None),
+    # PM session = ET 16:30–22:59 (tolerates a late firing of the 17:30 cron — incl. the
     # real-world 19:16 / 20:09 ET firings that the old exact-hour guard skipped)
-    (14, 0, "PM"), (17, 30, "PM"), (19, 16, "PM"), (20, 9, "PM"), (22, 59, "PM"),
+    (16, 30, "PM"), (17, 30, "PM"), (19, 16, "PM"), (20, 9, "PM"), (22, 59, "PM"),
     # overnight gap -> skip (don't publish at 3am)
     (23, 0, None), (0, 0, None), (3, 0, None), (6, 0, None),
 ])
