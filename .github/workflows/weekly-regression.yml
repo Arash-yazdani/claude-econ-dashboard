@@ -117,6 +117,9 @@ jobs:
           LANGSMITH_ENDPOINT: https://api.smith.langchain.com
           LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
           LANGSMITH_PROJECT: macro-daily-briefing
+          # Judge on Gemini 2.5 Flash (not the writer's model family); Claude stays the judge failover.
+          JUDGE_PROVIDER: gemini
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         # --pace 20 for EVERY run. 24 calls at 10s pacing is ~10/min, exactly Gemini's free-tier
         # RPM ceiling, so the TAIL cases (A1/A2) 429 at the end regardless of daily quota. The
         # scheduled run used to keep 10s on the theory that it "tolerates a partial" — but a

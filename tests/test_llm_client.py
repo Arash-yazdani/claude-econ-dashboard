@@ -311,3 +311,22 @@ def test_cross_provider_failover_only_with_gemini_key(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "k")
     assert isinstance(llm_client.make_writer_clients(cross_provider=True)[1], llm_client.ChainClient)
     assert not isinstance(llm_client.make_writer_clients()[1], llm_client.ChainClient)
+
+
+def test_to_gemini_schema_nullable_and_no_additional_properties():
+    from macro_pipeline.judge import JUDGE_JSON_SCHEMA
+    g = llm_client.to_gemini_schema(JUDGE_JSON_SCHEMA)
+    assert g["properties"]["c1_quotability"] == {"type": "integer", "nullable": True}
+    assert g["properties"]["c5_length_format"] == {"type": "integer"}
+    assert "additionalProperties" not in g and "additionalProperties" not in g["properties"]["rationale"]
+    assert g["required"] == JUDGE_JSON_SCHEMA["required"]
+
+
+def test_judge_provider_gemini_only_for_primary(monkeypatch):
+    monkeypatch.setenv("JUDGE_PROVIDER", "gemini")
+    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    from macro_pipeline.legacy_llm_client import GeminiClient
+    assert isinstance(llm_client.make_judge_client({"type": "object"}), GeminiClient)
+    assert isinstance(llm_client.make_judge_client({"type": "object"}, failover=True), llm_client.BedrockClaudeClient)
+    monkeypatch.delenv("JUDGE_PROVIDER")
+    assert isinstance(llm_client.make_judge_client({"type": "object"}), llm_client.BedrockClaudeClient)

@@ -114,7 +114,8 @@ class GeminiClient:
 
     def __init__(self, api_key: Optional[str] = None, model: str = GEMINI_MODEL,
                  session: Optional[requests.Session] = None, timeout: float = 30.0,
-                 temperature: float = TEMPERATURE, response_schema: Optional[dict[str, Any]] = None) -> None:
+                 temperature: float = TEMPERATURE, response_schema: Optional[dict[str, Any]] = None,
+                 max_output_tokens: int = MAX_OUTPUT_TOKENS) -> None:
         # temperature + response_schema are overridable so the B7 judge can reuse this client
         # (judge runs temp 0.0 with the JudgeVerdict schema); defaults stay the production values.
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "")
@@ -125,6 +126,7 @@ class GeminiClient:
         self.timeout = timeout
         self.temperature = temperature
         self.response_schema = response_schema or GEMINI_RESPONSE_SCHEMA
+        self.max_output_tokens = max_output_tokens
 
     def generate(self, system: str, user: str) -> dict[str, Any]:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
@@ -132,7 +134,7 @@ class GeminiClient:
             "systemInstruction": {"parts": [{"text": system}]},
             "contents": [{"role": "user", "parts": [{"text": user}]}],
             "generationConfig": {
-                "temperature": self.temperature, "topP": TOP_P, "maxOutputTokens": MAX_OUTPUT_TOKENS,
+                "temperature": self.temperature, "topP": TOP_P, "maxOutputTokens": self.max_output_tokens,
                 "responseMimeType": "application/json", "responseSchema": self.response_schema,
                 "thinkingConfig": {"thinkingBudget": 0},  # deterministic JSON; no thinking budget
             },

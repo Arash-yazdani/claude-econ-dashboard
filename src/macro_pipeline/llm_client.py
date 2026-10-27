@@ -210,8 +210,31 @@ def make_writer_clients(*, cross_provider: bool = False) -> tuple[LLMClient, LLM
     return primary, failover
 
 
-def make_judge_client(schema: dict[str, Any], *, failover: bool = False) -> BedrockClaudeClient:
-    """A judge on Claude Haiku 4.5 (us. profile; global. when `failover`)."""
+def to_gemini_schema(schema: Any) -> Any:
+    """JSON Schema -> Gemini responseSchema (OpenAPI subset): ["x","null"] becomes
+    {"type": "x", "nullable": true}; additionalProperties is dropped (Gemini rejects it)."""
+    if isinstance(schema, list):
+        return [to_gemini_schema(x) for x in schema]
+    if not isinstance(schema, dict):
+        return schema
+    out = {k: to_gemini_schema(v) for k, v in schema.items() if k != "additionalProperties"}
+    if isinstance(out.get("type"), list):
+        types = [t for t in out["type"] if t != "null"]
+        out["type"] = types[0]
+        if len(types) < len(schema["type"]):
+            out["nullable"] = True
+    return out
+
+
+def make_judge_client(schema: dict[str, Any], *, failover: bool = False) -> LLMClient:
+    """A judge on Claude Haiku 4.5 (us. profile; global. when `failover`).
+    JUDGE_PROVIDER=gemini (+ GEMINI_API_KEY) puts the PRIMARY judge on Gemini 2.5 Flash so the
+    judge is not the writer's model family; the failover judge stays Claude. Set only in the
+    daily and weekly workflows; compare-models keeps the Claude judge for a stable baseline."""
+    if not failover and os.environ.get("JUDGE_PROVIDER") == "gemini" and os.environ.get("GEMINI_API_KEY"):
+        from .legacy_llm_client import GeminiClient
+        return GeminiClient(temperature=0.0, response_schema=to_gemini_schema(schema),
+                            max_output_tokens=JUDGE_MAX_TOKENS)
     model = (os.environ.get(JUDGE_FAILOVER_MODEL_ENV) or JUDGE_FAILOVER_MODEL) if failover else \
         (os.environ.get(JUDGE_MODEL_ENV) or JUDGE_MODEL)
     return BedrockClaudeClient(model, max_tokens=JUDGE_MAX_TOKENS, schema=schema)
