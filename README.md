@@ -11,12 +11,13 @@ Decision record: [docs/adr/ADR-007-claude-on-bedrock-writer.md](docs/adr/ADR-007
 |------|------------------------------------|--------------|
 | Briefing writer (primary) | `us.anthropic.claude-haiku-4-5-20251001-v1:0` | `CLAUDE_PRIMARY_MODEL` |
 | Writer failover | `global.anthropic.claude-haiku-4-5-20251001-v1:0` | `CLAUDE_FAILOVER_MODEL` |
-| Craft judge, persona judge | `us.anthropic.claude-haiku-4-5-20251001-v1:0` | `CLAUDE_JUDGE_MODEL` |
+| Craft judge, persona judge | Gemini 2.5 Flash on scheduled runs (`JUDGE_PROVIDER=gemini`); otherwise, and as failover, `us.anthropic.claude-haiku-4-5-20251001-v1:0` | `JUDGE_PROVIDER`, `CLAUDE_JUDGE_MODEL` |
 | Judge failover | `global.anthropic.claude-haiku-4-5-20251001-v1:0` | `CLAUDE_JUDGE_FAILOVER_MODEL` |
 
-The design called for Haiku 5.5 / Sonnet 5.5; the AWS account could not invoke them, so all roles run
-Haiku 4.5 on `bedrock-runtime` (ADR-007, amendment 2026-10-22). Writer and judge share a model, so the
-judge's same-model bias is a stated limitation; the deterministic validator is the primary gate.
+The design called for Haiku 5.5 / Sonnet 5.5; the AWS account could not invoke them, so all Claude roles run
+Haiku 4.5 on `bedrock-runtime` (ADR-007, amendment 2026-10-22). Since 2026-10-27 the scheduled runs put the
+primary judge on Gemini 2.5 Flash (`JUDGE_PROVIDER=gemini`), so the judge is not the writer's model family;
+the Claude judge is the failover. The deterministic validator is the primary gate.
 
 Unchanged and deterministic: FRED ingest, the rules-only regime classifier (the model does not pick
 the regime), the prompt (v1.5), the B4 validator and its fallback card, the audit log.
@@ -83,7 +84,7 @@ or macro.modeo.io, it describes the original, not this repo.
 ### Macroeconomy Dashboard — Project Workspace
 
 **Product:** a personal, $0-budget U.S.-macro PWA whose one AI feature is the **Daily Conversation Briefing** — one LLM call per run, twice a day, that turns fresh indicators from 13 keyless-or-free sources (FRED backbone, grafted Treasury, BLS, NY Fed, CBOE, BEA, EIA, Census, FiscalData, gold spot) into one quotable headline + two quotable numbers, rendered as a card atop an Apple-Stocks-style dashboard.
-**Owner/Builder:** Arash Yazdani · **Sole user (N=1):** Bruce · **Budget:** $0/yr (free-tier APIs)
+**Owner/Builder:** Arash Yazdani · **Users:** one internal user (N=1) · **Budget:** $0/yr (free-tier APIs)
 **Kickoff:** Mon Jun 15, 2026 · **Live in production since:** Thu Jun 18, 2026
 
 > **Live now.** The build is done and the product is in steady-state operation. This README is the
@@ -134,7 +135,7 @@ the code and the ADRs in `docs/adr/` win.
 1. **Read once:** `Product Plan.md` (the narrative) → `Gantt chart.md` (the picture).
 2. **Drive daily work from `Project Tracker.xlsx` → `Task Tracker` sheet.** Set each row's **Status** via the dropdown (`Not Started / In Progress / Blocked / Done`) — cells auto-color.
 3. **At each gate (G0–G4)**, update the `Milestones & Gates` sheet with the actual date and pass/fail.
-4. **Log every Bruce sign-off** in the `Sign-off Tracker` sheet (status, date, and the ADR-style commit hash as evidence — per the PRD's audit rule).
+4. **Log every user sign-off** in the `Sign-off Tracker` sheet (status, date, and the ADR-style commit hash as evidence — per the PRD's audit rule).
 5. **Record measurements** in the `KPI Dashboard` sheet's `Current` column as the live regression and cohorts produce them.
 
 ### The Excel workbook — 6 sheets
@@ -159,7 +160,7 @@ G0 Design Lock → G1 Build Complete → G2 Launch-Ready (2026-06-18)
 | G0 | Jun 18 | 5 sign-offs + host decision + prompt locked | Passed. Host + cron in [ADR-001](docs/adr/ADR-001-host-and-cron-runner.md). Prompt locked at v1.3, now v1.5. |
 | G1 | Jun 24 | Pipeline runs end-to-end on a real device | Passed. First audited production run 2026-06-18. |
 | G2 | Jun 26 | Live regression green (C2 & C6 = 5/5) + 4 compliance sign-offs | Passed 2026-06-18: [launch-readiness checklist](docs/launch-readiness-checklist.md) 22/23, sign-offs in [ADR-002](docs/adr/ADR-002-compliance-signoffs.md). |
-| G3 / G4 | Jul 2 / Jul 17 | Cohort 0 then Cohort 1 (Bruce) to steady state | Cohort evidence is in `Project Tracker.xlsx` and `docs/feedback/`, not in this repo's data files. |
+| G3 / G4 | Jul 2 / Jul 17 | Cohort 0 then Cohort 1 (the internal user) to steady state | Cohort evidence is in `Project Tracker.xlsx` and `docs/feedback/`, not in this repo's data files. |
 
 Everything after G2 has been operational work rather than build work: the indicator set grew from 7
 to 26 across V2/V3, the classifier reached locked v1.2, the prompt reached v1.5, and the eval and
