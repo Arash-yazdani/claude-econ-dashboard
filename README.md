@@ -21,22 +21,29 @@ judge's same-model bias is a stated limitation; the deterministic validator is t
 Unchanged and deterministic: FRED ingest, the rules-only regime classifier (the model does not pick
 the regime), the prompt (v1.5), the B4 validator and its fallback card, the audit log.
 
-## Before anything runs
+## Status
 
-**Nothing is scheduled.** Every `schedule:` block in `.github/workflows/` is commented out, and the
-Cloudflare Worker's `[triggers] crons` in `cron-worker/wrangler.toml` is commented out. Nothing
-fires until AWS and GitHub secrets are wired and those blocks are restored.
+**Live since 2026-10-22**, the first live Claude briefing: two briefings a day, AM about 10:45 ET and PM
+about 17:30 ET. A Cloudflare Worker cron (`cron-worker/wrangler.toml`) fires the AM run; the `schedule:`
+blocks in `.github/workflows/daily-briefing.yml` cover the PM run and act as the fallback, and
+`run_daily.py` skips a slot that already published.
 
-1. AWS account with Bedrock model access to the three models above in your chosen region.
-2. IAM principal scoped to invoking those models on Bedrock (see ADR-007, "Access").
-3. GitHub repo for this copy (the Worker targets `Arash-yazdani/claude-econ-dashboard`).
-4. GitHub Actions secrets: `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, plus the
-   existing `FRED_API_KEY`, optional source keys, healthcheck URLs and `ALERT_SLACK_WEBHOOK`.
-   Use new healthchecks for this repo; pinging the original's checks would mix the two signals.
-5. Cloudflare Pages project serving `public/` on `claude-econ.modeo.io` (canonical/OG URLs and
-   OG images already point there).
-6. Then uncomment the schedules and `wrangler deploy` the Worker (CLAUDE.md: editing the workflow
-   schedule alone is inert while the Worker dispatches).
+**AWS access is GitHub OIDC, with no stored keys** (since 2026-10-26): the workflows request an OIDC token
+(`id-token: write`) and assume an IAM role trusted only by this repo's main branch, with one-hour
+credentials and a least-privilege policy on the inference profiles above.
+
+## Setting up your own copy
+
+1. AWS account with Bedrock model access to the models above in your chosen region.
+2. An IAM role for GitHub OIDC, trusted by your repo's main branch and scoped to invoking those models on
+   Bedrock (see ADR-007, "Access"). Put its ARN in `role-to-assume` in the workflows.
+3. GitHub Actions secrets: `AWS_REGION`, plus the existing `FRED_API_KEY`, optional source keys,
+   healthcheck URLs and `ALERT_SLACK_WEBHOOK`. Use new healthchecks for your copy; pinging the original's
+   checks would mix the two signals.
+4. Cloudflare Pages project serving `public/` (canonical and OG URLs point at `claude-econ.modeo.io`;
+   change them for your domain).
+5. `wrangler deploy` the Worker (CLAUDE.md: editing the workflow schedule alone is inert while the Worker
+   dispatches).
 
 ## Environment variables
 
@@ -45,7 +52,7 @@ Real environment wins over a local env file (`macro_pipeline._env`). Names only:
 | Variable | Needed for | Absent means |
 |----------|-----------|--------------|
 | `AWS_REGION` | every Claude call | clear `BriefingLLMError`; the run publishes the deterministic fallback card. No default region. |
-| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | Claude calls (or any standard boto credential source) | the call fails, failover fails, fallback card |
+| AWS credentials | Claude calls. Scheduled runs use GitHub OIDC (no stored key); local runs use any standard boto credential source | the call fails, failover fails, fallback card |
 | `CLAUDE_PRIMARY_MODEL`, `CLAUDE_FAILOVER_MODEL`, `CLAUDE_JUDGE_MODEL` | optional overrides | defaults in `llm_client.py` |
 | `GEMINI_API_KEY`, `GROQ_API_KEY` | `scripts/compare_models.py --live` only | compare refuses to run |
 | `FRED_API_KEY`, `BLS_API_KEY`, `GOLD_API_KEY`, `EIA_API_KEY`, `BEA_API_KEY`, `CENSUS_API_KEY` | data sources, unchanged | as in the original |
