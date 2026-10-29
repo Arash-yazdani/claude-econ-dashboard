@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "state": "default",
-  "generated_at": "2026-10-28T16:33:47-04:00",
-  "run_label": "PM",
-  "data_through": "2026-10-28",
+  "generated_at": "2026-10-29T10:46:01-04:00",
+  "run_label": "AM",
+  "data_through": "2026-10-29",
   "regime": "soft_landing",
   "regime_label": "Soft landing",
   "drivers": [
@@ -14,7 +14,7 @@
   "basis": [
     [
       "real_gdp_yoy",
-      2.1916,
+      2.0657,
       ">=",
       1.0
     ],
@@ -32,18 +32,18 @@
     ]
   ],
   "briefing": {
-    "headline": "Soft landing intact as unemployment steadies and core inflation edges toward the Fed's target.",
+    "headline": "Growth is cooling but employment stays firm, keeping the soft landing intact.",
     "quotable_numbers": [
       {
-        "indicator_id": "core_cpi_yoy",
-        "sentence": "Core CPI at 2.6 percent for Sep 2026 is cooling toward the Fed's target, easing pressure on rates."
+        "indicator_id": "real_gdp_yoy",
+        "sentence": "Real GDP softened to 2.1 percent for Q3 2026, slowing from prior quarter but still positive."
       },
       {
-        "indicator_id": "unemployment",
-        "sentence": "Unemployment at 4.2 percent for Sep 2026 holds firm, anchoring household demand and income."
+        "indicator_id": "core_cpi_yoy",
+        "sentence": "Core CPI at 2.6 percent for Sep 2026 sits just above the Fed's target, letting policy space open."
       }
     ],
-    "whats_new": "Today: 10-Year Treasury higher, from 4.99 percent to 5.05 percent.",
+    "whats_new": "Today: Real GDP softer, from 2.2 percent to 2.1 percent.",
     "regime_change": null
   },
   "fallback_text": null
