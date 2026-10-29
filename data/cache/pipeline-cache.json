@@ -32,22 +32,22 @@
       "value": 3.73768
     },
     "fed_funds": {
-      "last_release_date": "2026-10-28",
+      "last_release_date": "2026-10-29",
       "observation_date": "2026-10-28",
       "period_label": "2026-10-28",
       "value": 3.88
     },
     "federal_debt_gdp": {
-      "last_release_date": "2026-10-27",
-      "observation_date": "2026-10-27",
+      "last_release_date": "2026-10-28",
+      "observation_date": "2026-10-28",
       "period_label": "Q4 2026",
-      "value": 40582274.3
+      "value": 40551054.9
     },
     "gold_spot": {
       "last_release_date": "2026-10-29",
       "observation_date": "2026-10-29",
       "period_label": "2026-10-29",
-      "value": 4037.300049
+      "value": 4028.5
     },
     "housing_starts": {
       "last_release_date": "2026-10-20",
@@ -86,10 +86,10 @@
       "value": 12652.0
     },
     "mortgage_30y": {
-      "last_release_date": "2026-10-22",
-      "observation_date": "2026-10-22",
-      "period_label": "2026-10-22",
-      "value": 7.32
+      "last_release_date": "2026-10-29",
+      "observation_date": "2026-10-29",
+      "period_label": "2026-10-29",
+      "value": 7.24
     },
     "nasdaq": {
       "last_release_date": "2026-10-28",
@@ -116,22 +116,22 @@
       "value": 7743.98
     },
     "tips_10y_real": {
-      "last_release_date": "2026-10-28",
-      "observation_date": "2026-10-28",
-      "period_label": "2026-10-28",
-      "value": 2.67
+      "last_release_date": "2026-10-29",
+      "observation_date": "2026-10-29",
+      "period_label": "2026-10-29",
+      "value": 2.63
     },
     "treasury_10y": {
-      "last_release_date": "2026-10-28",
-      "observation_date": "2026-10-28",
-      "period_label": "2026-10-28",
-      "value": 5.05
+      "last_release_date": "2026-10-29",
+      "observation_date": "2026-10-29",
+      "period_label": "2026-10-29",
+      "value": 4.98
     },
     "treasury_2y": {
-      "last_release_date": "2026-10-28",
-      "observation_date": "2026-10-28",
-      "period_label": "2026-10-28",
-      "value": 4.67
+      "last_release_date": "2026-10-29",
+      "observation_date": "2026-10-29",
+      "period_label": "2026-10-29",
+      "value": 4.61
     },
     "umich_sentiment": {
       "last_release_date": "2026-10-23",
