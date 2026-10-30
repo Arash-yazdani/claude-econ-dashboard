@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "state": "default",
-  "generated_at": "2026-10-29T16:35:36-04:00",
-  "run_label": "PM",
-  "data_through": "2026-10-29",
+  "generated_at": "2026-10-30T10:45:49-04:00",
+  "run_label": "AM",
+  "data_through": "2026-10-30",
   "regime": "soft_landing",
   "regime_label": "Soft landing",
   "drivers": [
@@ -32,18 +32,18 @@
     ]
   ],
   "briefing": {
-    "headline": "The expansion holds steady with inflation moderating but still above target restraining growth.",
+    "headline": "Soft landing intact as growth cools and inflation stays manageable near target.",
     "quotable_numbers": [
       {
         "indicator_id": "core_cpi_yoy",
-        "sentence": "Core CPI at 2.56 percent for Sep 2026 is cooling but remains above the Fed's target."
+        "sentence": "Core CPI at 2.6 percent for Sep 2026 holds near the Fed's target, allowing rates to stabilize."
       },
       {
         "indicator_id": "unemployment",
-        "sentence": "Unemployment at 4.2 percent for Sep 2026 keeps the job market taut enough to sustain spending."
+        "sentence": "Unemployment at 4.2 percent for Sep 2026 keeps demand steady as growth moderates to 2.1 percent."
       }
     ],
-    "whats_new": "Today: 10-Year Treasury lower, from 5.05 percent to 4.98 percent.",
+    "whats_new": null,
     "regime_change": null
   },
   "fallback_text": null
