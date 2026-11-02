@@ -32,9 +32,9 @@
       "value": 3.73768
     },
     "fed_funds": {
-      "last_release_date": "2026-10-30",
-      "observation_date": "2026-10-29",
-      "period_label": "2026-10-29",
+      "last_release_date": "2026-11-02",
+      "observation_date": "2026-10-30",
+      "period_label": "2026-10-30",
       "value": 3.88
     },
     "federal_debt_gdp": {
@@ -47,7 +47,7 @@
       "last_release_date": "2026-11-02",
       "observation_date": "2026-11-02",
       "period_label": "2026-11-02",
-      "value": 3900.600098
+      "value": 3947.699951
     },
     "housing_starts": {
       "last_release_date": "2026-10-20",
@@ -56,10 +56,10 @@
       "value": 1221.0
     },
     "hy_spread": {
-      "last_release_date": "2026-10-30",
-      "observation_date": "2026-10-29",
-      "period_label": "2026-10-29",
-      "value": 3.26
+      "last_release_date": "2026-11-02",
+      "observation_date": "2026-10-30",
+      "period_label": "2026-10-30",
+      "value": 3.44
     },
     "jobless_claims": {
       "last_release_date": "2026-10-29",
@@ -110,25 +110,25 @@
       "value": 2.06574
     },
     "sp500": {
-      "last_release_date": "2026-10-30",
-      "observation_date": "2026-10-28",
-      "period_label": "2026-10-28",
-      "value": 7743.98
-    },
-    "tips_10y_real": {
-      "last_release_date": "2026-10-30",
+      "last_release_date": "2026-11-02",
       "observation_date": "2026-10-30",
       "period_label": "2026-10-30",
-      "value": 2.6
+      "value": 7580.07
+    },
+    "tips_10y_real": {
+      "last_release_date": "2026-11-02",
+      "observation_date": "2026-11-02",
+      "period_label": "2026-11-02",
+      "value": 2.62
     },
     "treasury_10y": {
-      "last_release_date": "2026-10-30",
+      "last_release_date": "2026-11-02",
       "observation_date": "2026-10-30",
       "period_label": "2026-10-30",
       "value": 4.94
     },
     "treasury_2y": {
-      "last_release_date": "2026-10-30",
+      "last_release_date": "2026-11-02",
       "observation_date": "2026-10-30",
       "period_label": "2026-10-30",
       "value": 4.56
@@ -146,13 +146,13 @@
       "value": 4.2
     },
     "usd_index": {
-      "last_release_date": "2026-10-26",
-      "observation_date": "2026-10-23",
-      "period_label": "2026-10-23",
-      "value": 121.3202
+      "last_release_date": "2026-11-02",
+      "observation_date": "2026-10-30",
+      "period_label": "2026-10-30",
+      "value": 121.6656
     },
     "vix": {
-      "last_release_date": "2026-10-30",
+      "last_release_date": "2026-11-02",
       "observation_date": "2026-10-30",
       "period_label": "2026-10-30",
       "value": 19.42

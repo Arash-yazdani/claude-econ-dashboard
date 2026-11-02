@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "state": "default",
-  "generated_at": "2026-11-01T19:55:07-05:00",
+  "generated_at": "2026-11-02T17:54:25-05:00",
   "run_label": "PM",
   "data_through": "2026-11-02",
   "regime": "soft_landing",
@@ -32,18 +32,18 @@
     ]
   ],
   "briefing": {
-    "headline": "The expansion holds as inflation edges down, though jobless claims crept higher.",
+    "headline": "Soft landing holds as inflation moderates and the job market stays resilient.",
     "quotable_numbers": [
       {
         "indicator_id": "core_cpi_yoy",
-        "sentence": "Core CPI at 2.56 percent for Sep 2026 sits near the Fed's target, allowing rates to stabilize."
+        "sentence": "Core CPI at 2.56 percent for Sep 2026 sits just above the Fed's target, releasing pressure."
       },
       {
         "indicator_id": "unemployment",
-        "sentence": "Unemployment at 4.2 percent for Sep 2026 ticked up slightly but remains low, sustaining household demand."
+        "sentence": "Unemployment at 4.2 percent for Sep 2026 keeps households earning and spending steady."
       }
     ],
-    "whats_new": null,
+    "whats_new": "Today: US Dollar index firmer, from 121.32 to 121.67.",
     "regime_change": null
   },
   "fallback_text": null
