@@ -44,10 +44,10 @@
       "value": 40593637.3
     },
     "gold_spot": {
-      "last_release_date": "2026-11-01",
-      "observation_date": "2026-11-01",
-      "period_label": "2026-11-01",
-      "value": 3876.399902
+      "last_release_date": "2026-11-02",
+      "observation_date": "2026-11-02",
+      "period_label": "2026-11-02",
+      "value": 3900.600098
     },
     "housing_starts": {
       "last_release_date": "2026-10-20",

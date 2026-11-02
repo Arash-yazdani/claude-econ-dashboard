@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "state": "default",
-  "generated_at": "2026-10-31T20:13:56-04:00",
+  "generated_at": "2026-11-01T19:55:07-05:00",
   "run_label": "PM",
-  "data_through": "2026-11-01",
+  "data_through": "2026-11-02",
   "regime": "soft_landing",
   "regime_label": "Soft landing",
   "drivers": [
@@ -32,15 +32,15 @@
     ]
   ],
   "briefing": {
-    "headline": "Soft landing intact as inflation edges down and jobs hold steady.",
+    "headline": "The expansion holds as inflation edges down, though jobless claims crept higher.",
     "quotable_numbers": [
       {
         "indicator_id": "core_cpi_yoy",
-        "sentence": "Core CPI at 2.6 percent for Sep 2026 is nearing the Fed's target, easing pressure on rates."
+        "sentence": "Core CPI at 2.56 percent for Sep 2026 sits near the Fed's target, allowing rates to stabilize."
       },
       {
         "indicator_id": "unemployment",
-        "sentence": "Unemployment at 4.2 percent for Sep 2026 keeps the labor market firm enough to support growth."
+        "sentence": "Unemployment at 4.2 percent for Sep 2026 ticked up slightly but remains low, sustaining household demand."
       }
     ],
     "whats_new": null,
