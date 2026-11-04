@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "state": "default",
-  "generated_at": "2026-11-03T16:43:47-05:00",
+  "generated_at": "2026-11-04T16:50:28-05:00",
   "run_label": "PM",
-  "data_through": "2026-11-03",
+  "data_through": "2026-11-04",
   "regime": "soft_landing",
   "regime_label": "Soft landing",
   "drivers": [
@@ -32,18 +32,18 @@
     ]
   ],
   "briefing": {
-    "headline": "Soft landing intact as disinflation holds and jobs remain stable.",
+    "headline": "Soft landing intact as inflation eases and growth steadies, though sentiment has weakened.",
     "quotable_numbers": [
       {
         "indicator_id": "core_cpi_yoy",
-        "sentence": "Core CPI at 2.6 percent for Sep 2026 sits near the Fed's target, allowing rates to stay measured."
+        "sentence": "Core CPI at 2.6 percent for Sep 2026 sits near the Fed's target, letting rate cuts proceed."
       },
       {
         "indicator_id": "unemployment",
-        "sentence": "Unemployment at 4.2 percent for Sep 2026 keeps the labor market resilient without overheating."
+        "sentence": "Unemployment at 4.2 percent for Sep 2026 remains low, anchoring household spending despite softer sentiment."
       }
     ],
-    "whats_new": "Today: 10-Year Treasury firmer, from 4.94 percent to 4.95 percent.",
+    "whats_new": "Today: Brent crude fell sharply from 123.10 USD to 107.03 USD, easing energy inflation pressure.",
     "regime_change": null
   },
   "fallback_text": null
