@@ -44,10 +44,10 @@
       "value": 40556120.8
     },
     "gold_spot": {
-      "last_release_date": "2026-11-07",
-      "observation_date": "2026-11-07",
-      "period_label": "2026-11-07",
-      "value": 4072.100098
+      "last_release_date": "2026-11-08",
+      "observation_date": "2026-11-08",
+      "period_label": "2026-11-08",
+      "value": 4072.1001
     },
     "housing_starts": {
       "last_release_date": "2026-10-20",
@@ -92,10 +92,10 @@
       "value": 7.18
     },
     "nasdaq": {
-      "last_release_date": "2026-11-05",
-      "observation_date": "2026-11-05",
-      "period_label": "2026-11-05",
-      "value": 24315.0
+      "last_release_date": "2026-11-06",
+      "observation_date": "2026-11-06",
+      "period_label": "2026-11-06",
+      "value": 24579.42
     },
     "payrolls": {
       "last_release_date": "2026-11-06",
@@ -153,9 +153,9 @@
     },
     "vix": {
       "last_release_date": "2026-11-06",
-      "observation_date": "2026-11-05",
-      "period_label": "2026-11-05",
-      "value": 28.18
+      "observation_date": "2026-11-06",
+      "period_label": "2026-11-06",
+      "value": 25.64
     }
   }
 }
