@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "state": "default",
-  "generated_at": "2026-11-08T20:02:38-05:00",
+  "generated_at": "2026-11-09T18:35:54-05:00",
   "run_label": "PM",
   "data_through": "2026-11-09",
   "regime": "soft_landing",
@@ -32,18 +32,18 @@
     ]
   ],
   "briefing": {
-    "headline": "Soft landing holds intact as unemployment tightens and inflation edges toward target.",
+    "headline": "The expansion holds steady, kept aloft by a tightening labor market and inflation retreating toward target.",
     "quotable_numbers": [
       {
         "indicator_id": "unemployment",
-        "sentence": "Unemployment fell to 4.1 percent in Oct 2026, pulling the job market tighter and supporting spending."
+        "sentence": "Unemployment fell to 4.1 percent for Oct 2026, tightening labor supply as hiring remains strong."
       },
       {
         "indicator_id": "core_cpi_yoy",
-        "sentence": "Core CPI at 2.56 percent for Sep 2026 drifts closer to the Fed's target, easing pressure on rates."
+        "sentence": "Core CPI at 2.56 percent for Sep 2026 has cooled sharply, moving closer to the Fed's target."
       }
     ],
-    "whats_new": null,
+    "whats_new": "Today: 10-Year Treasury firmer, from 4.86 percent to 4.88 percent.",
     "regime_change": null
   },
   "fallback_text": null
