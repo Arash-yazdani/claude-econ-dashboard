@@ -44,10 +44,10 @@
       "value": 40608506.9
     },
     "gold_spot": {
-      "last_release_date": "2026-11-13",
-      "observation_date": "2026-11-13",
-      "period_label": "2026-11-13",
-      "value": 3876.169922
+      "last_release_date": "2026-11-15",
+      "observation_date": "2026-11-15",
+      "period_label": "2026-11-15",
+      "value": 3887.600098
     },
     "housing_starts": {
       "last_release_date": "2026-10-20",
@@ -92,10 +92,10 @@
       "value": 7.11
     },
     "nasdaq": {
-      "last_release_date": "2026-11-12",
-      "observation_date": "2026-11-12",
-      "period_label": "2026-11-12",
-      "value": 25366.09
+      "last_release_date": "2026-11-13",
+      "observation_date": "2026-11-13",
+      "period_label": "2026-11-13",
+      "value": 25136.27
     },
     "payrolls": {
       "last_release_date": "2026-11-06",
@@ -111,9 +111,9 @@
     },
     "sp500": {
       "last_release_date": "2026-11-13",
-      "observation_date": "2026-11-12",
-      "period_label": "2026-11-12",
-      "value": 7592.4
+      "observation_date": "2026-11-13",
+      "period_label": "2026-11-13",
+      "value": 7561.67
     },
     "tips_10y_real": {
       "last_release_date": "2026-11-13",
@@ -153,9 +153,9 @@
     },
     "vix": {
       "last_release_date": "2026-11-13",
-      "observation_date": "2026-11-12",
-      "period_label": "2026-11-12",
-      "value": 18.7
+      "observation_date": "2026-11-13",
+      "period_label": "2026-11-13",
+      "value": 19.3
     }
   }
 }
