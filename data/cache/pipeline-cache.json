@@ -32,22 +32,22 @@
       "value": 3.73768
     },
     "fed_funds": {
-      "last_release_date": "2026-11-13",
-      "observation_date": "2026-11-12",
-      "period_label": "2026-11-12",
+      "last_release_date": "2026-11-16",
+      "observation_date": "2026-11-13",
+      "period_label": "2026-11-13",
       "value": 3.88
     },
     "federal_debt_gdp": {
-      "last_release_date": "2026-11-12",
-      "observation_date": "2026-11-12",
+      "last_release_date": "2026-11-13",
+      "observation_date": "2026-11-13",
       "period_label": "Q4 2026",
-      "value": 40608506.9
+      "value": 40616678.8
     },
     "gold_spot": {
       "last_release_date": "2026-11-16",
       "observation_date": "2026-11-16",
       "period_label": "2026-11-16",
-      "value": 3878.02002
+      "value": 3858.850098
     },
     "housing_starts": {
       "last_release_date": "2026-10-20",
@@ -56,10 +56,10 @@
       "value": 1221.0
     },
     "hy_spread": {
-      "last_release_date": "2026-11-13",
-      "observation_date": "2026-11-12",
-      "period_label": "2026-11-12",
-      "value": 3.2
+      "last_release_date": "2026-11-16",
+      "observation_date": "2026-11-13",
+      "period_label": "2026-11-13",
+      "value": 3.23
     },
     "jobless_claims": {
       "last_release_date": "2026-11-12",
@@ -116,22 +116,22 @@
       "value": 7561.67
     },
     "tips_10y_real": {
-      "last_release_date": "2026-11-13",
-      "observation_date": "2026-11-13",
-      "period_label": "2026-11-13",
-      "value": 2.91
+      "last_release_date": "2026-11-16",
+      "observation_date": "2026-11-16",
+      "period_label": "2026-11-16",
+      "value": 2.92
     },
     "treasury_10y": {
-      "last_release_date": "2026-11-13",
-      "observation_date": "2026-11-13",
-      "period_label": "2026-11-13",
-      "value": 5.15
+      "last_release_date": "2026-11-16",
+      "observation_date": "2026-11-16",
+      "period_label": "2026-11-16",
+      "value": 5.12
     },
     "treasury_2y": {
-      "last_release_date": "2026-11-13",
-      "observation_date": "2026-11-13",
-      "period_label": "2026-11-13",
-      "value": 4.88
+      "last_release_date": "2026-11-16",
+      "observation_date": "2026-11-16",
+      "period_label": "2026-11-16",
+      "value": 4.83
     },
     "umich_sentiment": {
       "last_release_date": "2026-10-23",
@@ -146,13 +146,13 @@
       "value": 4.1
     },
     "usd_index": {
-      "last_release_date": "2026-11-09",
-      "observation_date": "2026-11-06",
-      "period_label": "2026-11-06",
-      "value": 121.8803
+      "last_release_date": "2026-11-16",
+      "observation_date": "2026-11-13",
+      "period_label": "2026-11-13",
+      "value": 122.6503
     },
     "vix": {
-      "last_release_date": "2026-11-13",
+      "last_release_date": "2026-11-16",
       "observation_date": "2026-11-13",
       "period_label": "2026-11-13",
       "value": 19.3
