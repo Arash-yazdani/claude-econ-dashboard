@@ -44,10 +44,10 @@
       "value": 40709780.7
     },
     "gold_spot": {
-      "last_release_date": "2026-11-20",
-      "observation_date": "2026-11-20",
-      "period_label": "2026-11-20",
-      "value": 3534.199951
+      "last_release_date": "2026-11-21",
+      "observation_date": "2026-11-21",
+      "period_label": "2026-11-21",
+      "value": 3539.0
     },
     "housing_starts": {
       "last_release_date": "2026-11-18",
@@ -153,9 +153,9 @@
     },
     "vix": {
       "last_release_date": "2026-11-20",
-      "observation_date": "2026-11-19",
-      "period_label": "2026-11-19",
-      "value": 28.44
+      "observation_date": "2026-11-20",
+      "period_label": "2026-11-20",
+      "value": 35.89
     }
   }
 }
