@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "state": "default",
-  "generated_at": "2026-11-24T18:38:51-05:00",
+  "generated_at": "2026-11-25T18:19:46-05:00",
   "run_label": "PM",
-  "data_through": "2026-11-24",
+  "data_through": "2026-11-25",
   "regime": "soft_landing",
   "regime_label": "Soft landing",
   "drivers": [
@@ -14,7 +14,7 @@
   "basis": [
     [
       "real_gdp_yoy",
-      2.0657,
+      2.2902,
       ">=",
       1.0
     ],
@@ -32,18 +32,18 @@
     ]
   ],
   "briefing": {
-    "headline": "Soft landing intact as job gains keep pace with moderate inflation pressures.",
+    "headline": "Soft landing intact as growth holds steady and inflation creeps closer to target.",
     "quotable_numbers": [
       {
         "indicator_id": "core_cpi_yoy",
-        "sentence": "Core CPI at 2.6 percent for Sep 2026 runs above the Fed's target, holding rates elevated."
+        "sentence": "Core CPI at 2.6 percent for Sep 2026 sits just above the Fed's target, allowing rates to ease."
       },
       {
-        "indicator_id": "unemployment",
-        "sentence": "Unemployment at 4.1 percent for Oct 2026 tightened, sustaining household income and spending."
+        "indicator_id": "real_gdp_yoy",
+        "sentence": "Real GDP grew 2.3 percent in Q3 2026, steady enough to keep unemployment at 4.1 percent."
       }
     ],
-    "whats_new": "Today: 10-Year Treasury lower, from 4.92 percent to 4.91 percent.",
+    "whats_new": "Today: 10-Year Treasury lower, from 4.91 percent to 4.85 percent.",
     "regime_change": null
   },
   "fallback_text": null
